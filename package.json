@@ -1,0 +1,17 @@
+{
+  "name": "powergreen_webapp",
+  "version": "1.0.0",
+  "description": "PowerGreen es una página web que nace con un propósito claro: que cada persona pueda conocer el impacto que deja en el planeta y, sobre todo, proveer las herramientas para reducirlo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/cli": "^7.2.0",
+    "@capacitor/core": "^7.2.0"
+  }
+}
