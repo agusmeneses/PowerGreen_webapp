@@ -32,6 +32,17 @@
         onAuthStateChanged,
       } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
       import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+      // Añade esta línea para importar Firestore
+      import {
+        getFirestore,
+        collection,
+        doc,
+        setDoc,
+        getDoc,
+        query,
+        orderBy,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyAHGXC-YZXmNSAN5JfPdcg89zQwPjbAD04",
@@ -48,6 +59,8 @@
       const analytics = getAnalytics(app);
       const auth = getAuth(app);
       const storage = getStorage(app);
+      // Añade esta línea para inicializar Firestore
+      const db = getFirestore(app);
 
       // Expón las funciones necesarias al scope global
       window.firebaseAuth = {
@@ -58,6 +71,65 @@
           createUserWithEmailAndPassword(auth, email, password),
         signOut: () => signOut(auth),
         onAuthStateChanged: (callback) => onAuthStateChanged(auth, callback),
+        // Añade Firestore a las funciones expuestas
+        firestore: {
+          db,
+          saveFootprint: async (userId, footprintData) => {
+            try {
+              // Usamos la fecha como ID del documento para facilitar la actualización diaria
+              const footprintRef = doc(
+                db,
+                "users",
+                userId,
+                "footprints",
+                footprintData.date
+              );
+
+              await setDoc(footprintRef, footprintData, { merge: true }); // merge: true permite actualizar sin borrar otros campos
+
+              return true;
+            } catch (error) {
+              console.error("Error saving footprint:", error);
+              return false;
+            }
+          },
+          testConnection: async () => {
+            try {
+              const testRef = doc(db, "test", "connection");
+              await setDoc(testRef, {
+                test: "Conexión exitosa",
+                timestamp: new Date(),
+              });
+              const docSnap = await getDoc(testRef);
+              return docSnap.exists();
+            } catch (error) {
+              console.error("Error testing connection:", error);
+              return false;
+            }
+          },
+          getFootprintHistory: async (userId) => {
+            try {
+              const footprintsRef = collection(
+                db,
+                "users",
+                userId,
+                "footprints"
+              );
+              const q = query(footprintsRef, orderBy("timestamp", "desc"));
+              const querySnapshot = await getDocs(q);
+
+              const history = [];
+              querySnapshot.forEach((doc) => {
+                history.push(doc.data());
+              });
+
+              return history;
+            } catch (error) {
+              console.error("Error getting footprint history:", error);
+              return [];
+            }
+          },
+        },
       };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1768,7 +1840,7 @@
         });
 
         // Calcular huella de carbono
-        calculateBtn.addEventListener("click", function () {
+        calculateBtn.addEventListener("click", async function () {
           // Algoritmo simple de cálculo para demostración
           const driving = parseInt(driveDistance.value) * 0.0002; // toneladas CO2 por km
           const flights = parseInt(flightsPerYear.value) * 0.5; // toneladas CO2 por vuelo (promedio)
@@ -1834,6 +1906,71 @@
           // Guardar datos para seguimiento de progreso
           saveFootprintData(total);
           updateProgressChart();
+          // Guardar resultados en Firestore (solo si el usuario está autenticado)
+          const user = window.firebaseAuth.auth.currentUser;
+          if (user) {
+            const footprintData = {
+              total: total,
+              categories: {
+                transport: transportTotal,
+                energy: energyTotal,
+                food: foodTotal,
+                clothing: clothingImpact,
+                electronics: electronicsImpact,
+                waste: wasteTotal,
+              },
+              details: {
+                driving: parseInt(driveDistance.value),
+                flights: parseInt(flightsPerYear.value),
+                publicTransport:
+                  document.getElementById("publicTransport").value,
+                electricity: parseInt(electricityUsage.value),
+                renewableEnergy:
+                  document.getElementById("renewableEnergy").value,
+                dietType: document.getElementById("dietType").value,
+                clothingHabits: document.getElementById("clothingHabits").value,
+                electronicsHabits:
+                  document.getElementById("electronicsHabits").value,
+                recyclingHabits:
+                  document.getElementById("recyclingHabits").value,
+              },
+              date: new Date().toISOString().split("T")[0], // Fecha en formato YYYY-MM-DD
+              timestamp: new Date(),
+            };
+
+            try {
+              // Mostrar estado de guardado
+              saveResultsBtn.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+              saveResultsBtn.disabled = true;
+
+              // Guardar en Firestore
+              const saved = await window.firebaseAuth.firestore.saveFootprint(
+                user.uid,
+                footprintData
+              );
+
+              if (saved) {
+                saveResultsBtn.textContent = "¡Resultados Guardados!";
+                setTimeout(() => {
+                  saveResultsBtn.textContent = "Guardar Resultados";
+                  saveResultsBtn.disabled = false;
+                }, 2000);
+              } else {
+                saveResultsBtn.textContent = "Error al guardar";
+                saveResultsBtn.disabled = false;
+              }
+            } catch (error) {
+              console.error("Error al guardar huella:", error);
+              saveResultsBtn.textContent = "Error al guardar";
+              saveResultsBtn.disabled = false;
+            }
+          } else {
+            saveResultsBtn.textContent = "Inicia sesión para guardar";
+            setTimeout(() => {
+              saveResultsBtn.textContent = "Guardar Resultados";
+            }, 2000);
+          }
         });
 
         // Creación de gráfico de huella
@@ -1966,93 +2103,105 @@
         }
 
         // Actualizar gráfico de progreso con datos históricos
-        function updateProgressChart() {
-          if (
-            !window.footprintHistory ||
-            window.footprintHistory.length === 0
-          ) {
-            return;
-          }
+        async function updateProgressChart() {
+          const user = window.firebaseAuth.auth.currentUser;
+          if (!user) return;
 
-          const ctx = document.getElementById("progressChart").getContext("2d");
+          try {
+            const history =
+              await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
 
-          // Preparar datos
-          const labels = window.footprintHistory.map((entry) => {
-            const date = new Date(entry.date);
-            return `${
-              date.getMonth() + 1
-            }/${date.getDate()}/${date.getFullYear()}`;
-          });
+            if (history.length === 0) {
+              document.getElementById("noProgressData").style.display = "block";
+              return;
+            }
 
-          const values = window.footprintHistory.map((entry) => entry.value);
+            document.getElementById("noProgressData").style.display = "none";
 
-          // Crear o actualizar gráfico
-          if (window.progressChart) {
-            window.progressChart.destroy();
-          }
+            // Preparar datos para la gráfica
+            const labels = history
+              .map((entry) => {
+                const date = new Date(entry.date);
+                return `${date.getDate()}/${date.getMonth() + 1}`; // Formato DD/MM
+              })
+              .reverse();
 
-          window.progressChart = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels: labels,
-              datasets: [
-                {
-                  label: "Huella de Carbono (toneladas CO₂e)",
-                  data: values,
-                  fill: false,
-                  borderColor: "#2ECC71",
-                  tension: 0.1,
+            const values = history.map((entry) => entry.total).reverse();
+
+            // Crear o actualizar gráfico
+            const ctx = document
+              .getElementById("progressChart")
+              .getContext("2d");
+
+            if (window.progressChart) {
+              window.progressChart.destroy();
+            }
+
+            window.progressChart = new Chart(ctx, {
+              type: "line",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: "Huella de Carbono (toneladas CO₂e)",
+                    data: values,
+                    fill: false,
+                    borderColor: "#2ECC71",
+                    tension: 0.1,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    title: {
+                      display: true,
+                      text: "Toneladas CO₂e",
+                      color: document.documentElement.classList.contains("dark")
+                        ? "#ECF0F1"
+                        : "#2C3E50",
+                    },
+                    ticks: {
+                      color: document.documentElement.classList.contains("dark")
+                        ? "#ECF0F1"
+                        : "#2C3E50",
+                    },
+                    grid: {
+                      color: document.documentElement.classList.contains("dark")
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "rgba(0, 0, 0, 0.1)",
+                    },
+                  },
+                  x: {
+                    ticks: {
+                      color: document.documentElement.classList.contains("dark")
+                        ? "#ECF0F1"
+                        : "#2C3E50",
+                    },
+                    grid: {
+                      color: document.documentElement.classList.contains("dark")
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "rgba(0, 0, 0, 0.1)",
+                    },
+                  },
                 },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: "Toneladas CO₂e",
-                    color: document.documentElement.classList.contains("dark")
-                      ? "#ECF0F1"
-                      : "#2C3E50",
-                  },
-                  ticks: {
-                    color: document.documentElement.classList.contains("dark")
-                      ? "#ECF0F1"
-                      : "#2C3E50",
-                  },
-                  grid: {
-                    color: document.documentElement.classList.contains("dark")
-                      ? "rgba(255, 255, 255, 0.1)"
-                      : "rgba(0, 0, 0, 0.1)",
-                  },
-                },
-                x: {
-                  ticks: {
-                    color: document.documentElement.classList.contains("dark")
-                      ? "#ECF0F1"
-                      : "#2C3E50",
-                  },
-                  grid: {
-                    color: document.documentElement.classList.contains("dark")
-                      ? "rgba(255, 255, 255, 0.1)"
-                      : "rgba(0, 0, 0, 0.1)",
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: document.documentElement.classList.contains("dark")
+                        ? "#ECF0F1"
+                        : "#2C3E50",
+                    },
                   },
                 },
               },
-              plugins: {
-                legend: {
-                  labels: {
-                    color: document.documentElement.classList.contains("dark")
-                      ? "#ECF0F1"
-                      : "#2C3E50",
-                  },
-                },
-              },
-            },
-          });
+            });
+          } catch (error) {
+            console.error("Error al cargar el historial:", error);
+          }
         }
 
         // Navegación de resultados
@@ -2077,6 +2226,40 @@
             saveBtn.disabled = false;
           }, 2000);
         });
+
+        async function updateProgressStats() {
+          const user = window.firebaseAuth.auth.currentUser;
+          if (!user) return;
+
+          try {
+            const history =
+              await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
+
+            if (history.length > 0) {
+              // Calcular total ahorrado (comparando con el promedio)
+              const average = 10; // 10 toneladas promedio
+              const saved = history.reduce(
+                (acc, curr) => acc + (average - curr.total),
+                0
+              );
+
+              // Actualizar los contadores
+              document.querySelector(
+                "#progress .grid.grid-cols-1 div:nth-child(1) div"
+              ).textContent = Math.max(0, saved.toFixed(1));
+              document.querySelector(
+                "#progress .grid.grid-cols-1 div:nth-child(2) div"
+              ).textContent = document.getElementById(
+                "activeChallengesTodo"
+              ).children.length;
+              document.querySelector(
+                "#progress .grid.grid-cols-1 div:nth-child(3) div"
+              ).textContent = history.length;
+            }
+          } catch (error) {
+            console.error("Error al actualizar estadísticas:", error);
+          }
+        }
 
         // Funcionalidad para unirse a retos
         joinChallengeButtons.forEach((button) => {
@@ -2216,6 +2399,7 @@
 
         // Inicializar gráfico de progreso si existen datos
         updateProgressChart();
+        updateProgressStats();
         // Login/Register functionality
         const loginForm = document.getElementById("loginForm");
         const registerForm = document.getElementById("registerForm");
@@ -2306,6 +2490,21 @@
             }
           });
         }
+        // Al final de tu event listener DOMContentLoaded, añade:
+        document
+          .getElementById("testFirestoreBtn")
+          .addEventListener("click", async () => {
+            const result = await window.firebaseAuth.firestore.testConnection();
+            if (result) {
+              alert(
+                "¡Conexión con Firestore exitosa! Revisa tu base de datos en Firebase Console."
+              );
+            } else {
+              alert(
+                "Error al conectar con Firestore. Revisa la consola para más detalles."
+              );
+            }
+          });
       });
     </script>
     <div
@@ -2375,5 +2574,22 @@
         </div>
       </div>
     </div>
+    <button
+      id="testFirestoreBtn"
+      style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 10px;
+        background: #2ecc71;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      "
+    >
+      Probar Firestore
+    </button>
   </body>
 </html>
