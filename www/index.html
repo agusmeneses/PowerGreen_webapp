@@ -73,7 +73,7 @@
         onAuthStateChanged: (callback) => onAuthStateChanged(auth, callback),
         // Añade Firestore a las funciones expuestas
         firestore: {
-          db,
+          db,          api: { doc, setDoc, getDoc, collection, query, orderBy, getDocs },
           saveFootprint: async (userId, footprintData) => {
             try {
               // Usamos la fecha como ID del documento para facilitar la actualización diaria
@@ -135,16 +135,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: "#2ECC71",
-              secondary: "#27AE60",
-              accent: "#3498DB",
-              dark: "#2C3E50",
-              light: "#ECF0F1",
-            },
+    tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary:   "#254D32", // verde bosque (para botones/accents principales)
+          secondary: "#6B7F5B", // verde oliva/salvia (para elementos secundarios)
+          accent:    "#A3B18A", // salvia claro (chips, badges, resaltados suaves)
+          ink:       "#1F3D2B", // texto principal (verde muy oscuro legible)
+          surface:   "#F8EBCF", // crema (fondos/containers claros)
+        },
+        boxShadow: {
+          soft: "0 10px 30px rgba(0,0,0,.08)",
+        },
+        borderRadius: {
+          "2xl": "1.25rem",
+        },
           },
         },
         darkMode: "class",
@@ -352,82 +359,126 @@
       #globalLoader {
         transition: opacity 0.5s ease-out;
       }
+      /* --- Carrusel Diario (scroll snap) --- */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.pg-carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: .25rem .25rem 1rem;
+}
+.pg-card {
+  scroll-snap-align: start;
+  min-width: 85%;
+  max-width: 85%;
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  padding: 1rem;
+  transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+}
+.dark .pg-card { background: #111827; box-shadow: 0 10px 30px rgba(255,255,255,.06); }
+.pg-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0,0,0,.12); }
+
+.pg-card {
+  scroll-snap-align: center;
+  min-width: 90%;
+  max-width: 90%;
+  min-height: 280px;   /* <- agrega altura mínima */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  padding: 1.25rem;
+  transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+}
+.dark .pg-card-icon { border-radius: 1.25rem; background: rgba(187, 221, 199, 0.13); }
+
+/* Modal diario */
+.pg-modal-backdrop { background: rgba(0,0,0,.5); }
+
     </style>
   </head>
-  <body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-    <div
-      id="globalLoader"
-      class="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50"
-    >
-      <div
-        class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"
-      ></div>
+  <body class="bg-surface dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    
+<!-- Splash/Loader con video + logo -->
+<div id="globalLoader" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 transition-opacity duration-500">
+  <div class="flex flex-col items-center">
+    <!-- Si pones el archivo assets/video/splash.mp4 se reproduce; si no, queda el logo animado -->
+    <video id="splashVideo" class="w-40 h-40 rounded-2xl shadow-soft mb-4" autoplay muted playsinline preload="auto">
+      <source src="" type="video/mp4" />
+    </video>
+
+    <!-- Logo huella + texto -->
+    <div class="flex items-center gap-3 text-white">
+      <svg width="42" height="42" viewBox="0 0 24 24" class="animate-pulse">
+        <path fill="currentColor" d="M7 20c0-2 2-4 5-4s5 2 5 4-2 4-5 4-5-2-5-4Zm7.5-10.5a1.5 1.5 0 1 1 3.001.001A1.5 1.5 0 0 1 14.5 9.5ZM12 2a2 2 0 1 1 0 4a2 2 0 0 1 0-4Zm-5 3a1.75 1.75 0 1 1 0 3.5A1.75 1.75 0 0 1 7 5Zm-2 6a2 2 0 1 1 0 4a2 2 0 0 1 0-4Z"/>
+      </svg>
+      <span class="text-2xl font-semibold tracking-wide">PowerGreen</span>
     </div>
-    <header class="bg-primary text-white py-4 shadow-md">
-      <div class="container mx-auto px-4 flex justify-between items-center">
-        <div class="flex items-center">
-          <img src="index.png" alt="PowerGreen Logo" class="w-8 h-8 mr-2" />
-          <h1 class="text-xl font-bold">PowerGreen</h1>
-        </div>
-        <nav>
-          <button id="menuToggle" class="md:hidden focus:outline-none">
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16m-7 6h7"
-              ></path>
-            </svg>
-          </button>
-          <ul
-            id="mobileMenu"
-            class="hidden absolute top-16 right-0 bg-primary w-full py-2 px-4 md:relative md:flex md:w-auto md:top-0 md:py-0 md:space-x-6 z-10"
-          >
-            <li class="my-2 md:my-0">
-              <button
-                class="tab-button focus:outline-none"
-                data-tab="calculator"
-              >
-                Calculadora
-              </button>
-            </li>
-            <li class="my-2 md:my-0">
-              <button class="tab-button focus:outline-none" data-tab="tips">
-                Consejos
-              </button>
-            </li>
-            <li class="my-2 md:my-0">
-              <button
-                class="tab-button focus:outline-none"
-                data-tab="challenges"
-              >
-                Retos
-              </button>
-            </li>
-            <li class="my-2 md:my-0">
-              <button class="tab-button focus:outline-none" data-tab="progress">
-                Progreso
-              </button>
-            </li>
-            <li class="my-2 md:my-0">
-              <button
-                id="logoutBtn"
-                class="focus:outline-none text-red-400 hover:text-red-300 hidden"
-              >
-                Cerrar Sesión
-              </button>
-            </li>
-          </ul>
-        </nav>
+
+  </div>
+</div>
+
+    <header class="sticky top-0 bg-primary text-white/95 shadow-md z-40">
+  <div class="max-w-5xl mx-auto px-4">
+    <!-- App bar -->
+    <div class="h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <img src="index.png" alt="PowerGreen" class="w-9 h-9 rounded-md" />
+        <h1 class="text-lg font-semibold tracking-wide">PowerGreen</h1>
       </div>
-    </header>
+
+      <div class="flex items-center gap-2">
+        <!-- Tema -->
+        <button id="themeToggle"
+          class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm"
+          title="Cambiar tema" aria-label="Cambiar tema">🌓</button>
+
+        <!-- Menú (mobile) -->
+        <button id="menuToggle" class="md:hidden px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 focus:outline-none" aria-label="Abrir menú">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 12h16m0 6H4" />
+          </svg>
+        </button>
+
+        <!-- Cerrar sesión (sutil, no rojo) -->
+        <button id="logoutBtn"
+          class="hidden md:inline-flex px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs (chips) -->
+    <nav id="mobileMenu"
+         class="hidden md:block overflow-x-auto no-scrollbar py-2 -mx-1">
+      <ul class="grid grid-cols-2 md:flex md:flex-wrap gap-2 px-1">
+        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="calculator">Calculadora</button></li>
+        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="tips">Consejos</button></li>
+        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="challenges">Retos</button></li>
+        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="progress">Progreso</button></li>
+        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="daily">Diario</button></li>
+
+        <!-- Cerrar sesión extra en mobile (dentro del menú) -->
+        <li class="md:hidden">
+          <button id="logoutBtnMobile"
+            class="w-full px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm">
+            Cerrar sesión
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
 
     <main class="container mx-auto px-4 py-6">
       <!-- Sección de Login -->
@@ -848,6 +899,53 @@
           </div>
         </div>
       </section>
+
+<!-- Sección Diario (tarjetas deslizables) -->
+        <section id="daily" class="tab-content">
+          <div class="max-w-5xl mx-auto">
+            <h2 class="text-2xl font-semibold mb-4">Carga diaria</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+              Desliza las tarjetas y registra tu huella para hoy en la categoría que quieras.
+            </p>
+
+            <!-- Carrusel -->
+            <div id="dailyCarousel" class="pg-carousel no-scrollbar"></div>
+
+            <!-- Tip: mini resumen del día -->
+            <div id="dailySummary" class="mt-6 p-4 rounded-2xl bg-white dark:bg-gray-800 shadow-soft">
+              <div class="flex items-center justify-between">
+                <span class="font-medium">Total de hoy</span>
+                <span id="dailyTotal" class="text-lg font-semibold text-primary">0 kg CO₂e</span>
+              </div>
+              <p id="dailyHint" class="text-sm text-gray-600 dark:text-gray-400 mt-1">Aún no registraste nada hoy.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Modal de carga diaria -->
+        <div id="dailyModal" class="fixed inset-0 hidden items-center justify-center z-50">
+          <div class="absolute inset-0 pg-modal-backdrop"></div>
+          <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-soft w-full max-w-md mx-4 p-6">
+            <button id="dailyModalClose" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">&times;</button>
+            <div class="flex items-center gap-3 mb-4">
+              <div id="dailyModalIcon" class="pg-card-icon">🌱</div>
+              <div>
+                <h3 id="dailyModalTitle" class="text-xl font-semibold">Registrar</h3>
+                <p id="dailyModalDesc" class="text-sm text-gray-600 dark:text-gray-400">Carga del día para esta categoría.</p>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <label class="block text-sm font-medium">Valor de hoy</label>
+              <input id="dailyModalInput" type="number" min="0" step="0.01" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-800" />
+              <p id="dailyModalUnit" class="text-sm text-gray-600 dark:text-gray-400">unidad</p>
+              <button id="dailyModalSave" class="w-full py-3 rounded-2xl bg-primary text-white font-semibold hover:opacity-90">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+
+        
+
 
       <!-- Sección de Consejos -->
       <section id="tips" class="tab-content py-6">
@@ -1413,93 +1511,7 @@
           </div>
         </div>
       </section>
-      <section id="login" class="tab-content py-6 hidden">
-        <div
-          class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-8"
-        >
-          <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-primary">Inicia Sesión</h2>
-            <p class="text-gray-600 dark:text-gray-400">
-              O crea una cuenta para guardar tu progreso
-            </p>
-          </div>
-
-          <div id="loginForm" class="space-y-6">
-            <div>
-              <label class="block text-sm font-medium mb-1"
-                >Correo electrónico</label
-              >
-              <input
-                type="email"
-                id="loginEmail"
-                class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Contraseña</label>
-              <input
-                type="password"
-                id="loginPassword"
-                class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <button
-              id="loginBtn"
-              class="w-full bg-primary hover:bg-secondary text-white py-3 rounded-lg transition-all"
-            >
-              Iniciar Sesión
-            </button>
-            <p class="text-center text-sm">
-              ¿No tienes cuenta?
-              <button id="showRegister" class="text-primary font-medium">
-                Regístrate
-              </button>
-            </p>
-          </div>
-
-          <div id="registerForm" class="space-y-6 hidden">
-            <!-- <div>
-                  <label class="block text-sm font-medium mb-1">Nombre</label>
-                  <input type="text" id="registerName" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary">
-                </div> -->
-            <div>
-              <label class="block text-sm font-medium mb-1"
-                >Correo electrónico</label
-              >
-              <input
-                type="email"
-                id="registerEmail"
-                class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Contraseña</label>
-              <input
-                type="password"
-                id="registerPassword"
-                class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <button
-              id="registerBtn"
-              class="w-full bg-accent hover:bg-blue-600 text-white py-3 rounded-lg transition-all"
-            >
-              Crear Cuenta
-            </button>
-            <p class="text-center text-sm">
-              ¿Ya tienes cuenta?
-              <button id="showLogin" class="text-primary font-medium">
-                Inicia Sesión
-              </button>
-            </p>
-          </div>
-
-          <div
-            id="loginMessage"
-            class="mt-4 text-center text-red-500 hidden"
-          ></div>
-        </div>
-      </section>
+      
     </main>
 
     <footer class="bg-dark text-white py-6 mt-10">
@@ -1515,19 +1527,19 @@
             <a
               href="#"
               id="aboutLink"
-              class="hover:text-primary transition-colors duration-300"
+              class="hover:text-primary text-green-600 transition-colors duration-300"
               >Acerca de</a
             >
             <a
               href="#"
               target="_blank"
-              class="hover:text-primary transition-colors duration-300"
+              class="hover:text-primary text-green-600 transition-colors duration-300"
               >Privacidad</a
             >
             <a
               href="#"
               id="contactLink"
-              class="hover:text-primary transition-colors duration-300"
+              class="hover:text-primary text-green-600 transition-colors duration-300"
               >Contacto</a
             >
           </div>
@@ -1561,34 +1573,79 @@
         const auth = window.firebaseAuth;
         globalLoader.style.display = "flex";
 
-        // Observador de estado de autenticación con manejo del loader
-        window.firebaseAuth.onAuthStateChanged((user) => {
-          // Ocultar el loader con transición
-          globalLoader.style.opacity = "0";
 
-          // Después de que termine la transición, ocultar completamente
-          setTimeout(() => {
-            globalLoader.style.display = "none";
+        
 
-            if (user) {
-              // Usuario logueado
-              authSection.style.display = "none";
-              mainContent.style.display = "block";
-              header.style.display = "flex";
-              footer.style.display = "block";
-              mobileMenu.classList.remove("hidden");
-              document.getElementById("logoutBtn").classList.remove("hidden");
-              showTab("calculator");
-            } else {
-              // Usuario no logueado
-              authSection.style.display = "block";
-              mainContent.style.display = "none";
-              header.style.display = "none";
-              footer.style.display = "none";
-              document.getElementById("logoutBtn").classList.add("hidden");
-            }
-          }, 500); // Tiempo igual a la duración de la transición CSS
-        });
+// ---- Esperar a que Firebase esté listo y recién ahí enganchar onAuthStateChanged ----
+function waitForFirebaseReady() {
+  return new Promise(function (resolve, reject) {
+    var t0 = Date.now();
+    (function check() {
+      if (window.firebaseAuth && window.firebaseAuth.firestore && window.firebaseAuth.firestore.api) return resolve();
+      if (Date.now() - t0 > 7000) return reject(new Error("Firebase no inicializó a tiempo"));
+      setTimeout(check, 40);
+    })();
+  });
+}
+
+// Variables que vamos a asignar cuando Firebase esté listo
+let DB, FAPI, doc, setDoc, getDoc;
+
+// REGISTRO del onAuthStateChanged después de que Firebase exista
+waitForFirebaseReady().then(function () {
+  FAPI = window.firebaseAuth.firestore.api;
+  DB   = window.firebaseAuth.firestore.db;
+  ({ doc, setDoc, getDoc } = FAPI);
+
+  window.firebaseAuth.onAuthStateChanged(function (user) {
+    // Fade-out del loader/splash (diseño se mantiene)
+    globalLoader.style.opacity = "0";
+    setTimeout(function () {
+      globalLoader.style.display = "none";
+
+      if (user) {
+        // UI logueado (idéntico a lo que ya tenías)
+        authSection.style.display = "none";
+        mainContent.style.display = "block";
+        header.style.display = "flex";
+        footer.style.display = "block";
+        mobileMenu.classList.remove("hidden");
+        document.getElementById("logoutBtn").classList.remove("hidden");
+
+        // Asegurar doc de usuario + decidir pantalla SIN async/await
+        ensureUserDoc(user.uid)
+          .then(function () {
+            return getDoc(doc(DB, "users", user.uid));
+          })
+          .then(function (userSnap) {
+            var completed = userSnap.exists() && userSnap.data() && userSnap.data().initialSurvey && userSnap.data().initialSurvey.completedAt;
+            // si ya pegaste renderDailyCards(), podés llamarlo aquí (no cambia diseño)
+            if (typeof renderDailyCards === "function") renderDailyCards();
+            showTab(completed ? "daily" : "calculator");
+
+            // si tenés funciones de progreso, refrescarlas aquí
+            if (typeof updateProgressChart === "function") updateProgressChart();
+            if (typeof updateProgressStats === "function") updateProgressStats();
+          })
+          .catch(function (e) {
+            console.error(e);
+            showTab("calculator");
+          });
+
+      } else {
+        // UI no logueado (idéntico a lo que ya tenías)
+        authSection.style.display = "block";
+        mainContent.style.display = "none";
+        header.style.display = "none";
+        footer.style.display = "none";
+        document.getElementById("logoutBtn").classList.add("hidden");
+      }
+    }, 500);
+  });
+}).catch(function (e) {
+  console.error(e);
+});
+
 
         // Inicialmente ocultar todo excepto auth
         mainContent.style.display = "none";
@@ -1937,6 +1994,15 @@
               date: new Date().toISOString().split("T")[0], // Fecha en formato YYYY-MM-DD
               timestamp: new Date(),
             };
+
+            // Marca la encuesta inicial como completada (1 sola vez)
+            try {
+              const answersPayload = footprintData?.inputs || null; // si querés guardar respuestas bases
+              await setInitialSurveyDone(user.uid, answersPayload);
+            } catch (e) {
+              console.warn("No se pudo marcar initialSurvey:", e);
+            }
+
 
             try {
               // Mostrar estado de guardado
@@ -2400,59 +2466,6 @@
         // Inicializar gráfico de progreso si existen datos
         updateProgressChart();
         updateProgressStats();
-        // Login/Register functionality
-        const loginForm = document.getElementById("loginForm");
-        const registerForm = document.getElementById("registerForm");
-        const showRegister = document.getElementById("showRegister");
-        const showLogin = document.getElementById("showLogin");
-        const loginBtn = document.getElementById("loginBtn");
-        const registerBtn = document.getElementById("registerBtn");
-        const loginMessage = document.getElementById("loginMessage");
-
-        showRegister.addEventListener("click", () => {
-          loginForm.classList.add("hidden");
-          registerForm.classList.remove("hidden");
-        });
-
-        showLogin.addEventListener("click", () => {
-          registerForm.classList.add("hidden");
-          loginForm.classList.remove("hidden");
-        });
-
-        loginBtn.addEventListener("click", () => {
-          loginMessage.textContent =
-            "Usuario o contraseña incorrectos (simulación)";
-          loginMessage.classList.remove("hidden");
-
-          // Simulate loading
-          loginBtn.disabled = true;
-          loginBtn.innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-
-          setTimeout(() => {
-            loginBtn.disabled = false;
-            loginBtn.textContent = "Iniciar Sesión";
-          }, 1500);
-        });
-
-        registerBtn.addEventListener("click", () => {
-          loginMessage.textContent = "Registro exitoso (simulación)";
-          loginMessage.classList.remove("hidden");
-          loginMessage.classList.add("text-green-500");
-
-          // Simulate loading
-          registerBtn.disabled = true;
-          registerBtn.innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i> Creando cuenta...';
-
-          setTimeout(() => {
-            registerBtn.disabled = false;
-            registerBtn.textContent = "Crear Cuenta";
-            registerForm.classList.add("hidden");
-            loginForm.classList.remove("hidden");
-            loginMessage.classList.add("hidden");
-          }, 2000);
-        });
         // Contact Modal functionality
         const contactModal = document.getElementById("contactModal");
         const contactLink = document.getElementById("contactLink");
@@ -2507,6 +2520,196 @@
           });
       });
     </script>
+
+    <script>
+  // ... (tus variables ya existentes)
+
+  // Referencias Diario
+  const dailySection     = document.getElementById("daily");
+  const dailyCarousel    = document.getElementById("dailyCarousel");
+  const dailySummary     = document.getElementById("dailySummary");
+  const dailyTotalEl     = document.getElementById("dailyTotal");
+  const dailyHint        = document.getElementById("dailyHint");
+
+  // Modal Diario
+  const dailyModal       = document.getElementById("dailyModal");
+  const dailyModalClose  = document.getElementById("dailyModalClose");
+  const dailyModalIcon   = document.getElementById("dailyModalIcon");
+  const dailyModalTitle  = document.getElementById("dailyModalTitle");
+  const dailyModalDesc   = document.getElementById("dailyModalDesc");
+  const dailyModalInput  = document.getElementById("dailyModalInput");
+  const dailyModalUnit   = document.getElementById("dailyModalUnit");
+  const dailyModalSave   = document.getElementById("dailyModalSave");
+
+  // Categorías (factores aproximados; ajusta con tus factores reales)
+  const CATEGORIES = [
+    { id: "transporte",  label: "Transporte",   unit: "km",     factor: 0.121, icon: "🚗",  hint:"Auto, moto o similar" },
+    { id: "energia",     label: "Energía",      unit: "kWh",    factor: 0.233, icon: "⚡",  hint:"Consumo eléctrico" },
+    { id: "alimentacion",label: "Alimentación", unit: "comidas",factor: 2.50,  icon: "🍽️", hint:"Estimación por comida" },
+    { id: "ropa",        label: "Ropa",         unit: "prendas",factor: 6.50,  icon: "👕",  hint:"Compra/uso eventual" },
+    { id: "electronica", label: "Electrónica",  unit: "h uso",  factor: 0.05,  icon: "📱",  hint:"Uso dispositivos" },
+    { id: "residuos",    label: "Residuos",     unit: "kg",     factor: 0.45,  icon: "🗑️",  hint:"Desechos generados" },
+  ];
+
+  // Fecha YYYY-MM-DD
+  const todayStr = () => new Date().toISOString().split("T")[0];
+
+
+</script>
+
+<script>
+  function renderDailyCards() {
+    if (!dailyCarousel) return;
+    dailyCarousel.innerHTML = "";
+
+    // Duplicamos el set de tarjetas para "sensación" infinita
+    const all = [...CATEGORIES, ...CATEGORIES];
+    all.forEach(cat => {
+      const card = document.createElement("div");
+      card.className = "pg-card";
+      card.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="tip-card bg-white dark:bg-gray-700 rounded-lg shadow p-4 border-l-4 border-yellow-500 pg-card-icon">${cat.icon}</div>
+            <div>
+              <h3 class="text-lg font-semibold">${cat.label}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">${cat.hint}</p>
+            </div>
+          </div>
+          <button data-cat="${cat.id}" class="px-4 py-2 rounded-2xl bg-primary text-white font-medium hover:opacity-90">Añadir</button>
+        </div>
+      `;
+      dailyCarousel.appendChild(card);
+    });
+
+    // Listeners botones "Añadir"
+    dailyCarousel.querySelectorAll("button[data-cat]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cat = CATEGORIES.find(c => c.id === btn.dataset.cat);
+        openDailyModal(cat);
+      });
+    });
+  }
+
+  function openDailyModal(cat) {
+    if (!cat) return;
+    dailyModalIcon.textContent = cat.icon;
+    dailyModalTitle.textContent = `Registrar ${cat.label}`;
+    dailyModalDesc.textContent  = cat.hint;
+    dailyModalInput.value = "";
+    dailyModalUnit.textContent  = `Unidad: ${cat.unit}`;
+    dailyModal.dataset.cat = cat.id;
+    dailyModal.classList.remove("hidden");
+    dailyModal.classList.add("flex");
+  }
+
+  function closeDailyModal() {
+    dailyModal.classList.add("hidden");
+    dailyModal.classList.remove("flex");
+  }
+
+  dailyModalClose.addEventListener("click", closeDailyModal);
+  dailyModal.addEventListener("click", (e) => {
+    if (e.target === dailyModal) closeDailyModal();
+  });
+</script>
+
+<script>
+  async function ensureUserDoc(uid) {
+    if (!DB || !uid) return;
+    const ref = doc(DB, "users", uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        createdAt: new Date().toISOString(),
+        preferences: { locale: "es-AR" },
+        streak: { count: 0, lastEntryDate: null },
+        initialSurvey: { completedAt: null },
+      }, { merge: true });
+    }
+  }
+
+  async function setInitialSurveyDone(uid, payload) {
+    if (!DB || !uid) return;
+    const ref = doc(DB, "users", uid);
+    await setDoc(ref, {
+      initialSurvey: {
+        completedAt: new Date().toISOString(),
+        answers: payload || null,
+      }
+    }, { merge: true });
+  }
+
+  async function getDaily(uid, dateStr) {
+    const ref = doc(DB, "users", uid, "footprints", dateStr);
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data() : null;
+  }
+
+  async function saveDaily(uid, cat, value) {
+    const dateStr = todayStr();
+    const catDef  = CATEGORIES.find(c => c.id === cat);
+    if (!catDef) throw new Error("Categoría inválida");
+    const co2e = Number(value) * catDef.factor;
+
+    const ref = doc(DB, "users", uid, "footprints", dateStr);
+    const current = await getDaily(uid, dateStr);
+
+    const byCategory = Object.assign({
+      transporte: 0, energia: 0, alimentacion: 0, ropa: 0, electronica: 0, residuos: 0,
+    }, current?.totals?.byCategory || {});
+    byCategory[cat] = (byCategory[cat] || 0) + co2e;
+
+    const inputs = Array.isArray(current?.inputs) ? current.inputs.slice() : [];
+    inputs.push({
+      category: cat, value: Number(value), unit: catDef.unit, co2e,
+      note: null, source: "daily-card",
+      at: new Date().toISOString(),
+    });
+
+    const total = Object.values(byCategory).reduce((a,b)=>a+b, 0);
+
+    const payload = {
+      date: dateStr,
+      timestamp: new Date().toISOString(),
+      totals: { co2e: Number(total.toFixed(3)), byCategory },
+      inputs,
+    };
+
+    await setDoc(ref, payload, { merge: true });
+
+    // UI
+    dailyTotalEl.textContent = `${payload.totals.co2e.toFixed(2)} kg CO₂e`;
+    dailyHint.textContent = `Actualizado: ${catDef.label} +${co2e.toFixed(2)} kg CO₂e`;
+  }
+
+  dailyModalSave.addEventListener("click", async () => {
+    const cat = dailyModal.dataset.cat;
+    const value = Number(dailyModalInput.value);
+    if (!cat || isNaN(value) || value < 0) return;
+
+    const user = window.firebaseAuth?.auth?.currentUser;
+    if (!user) { alert("Inicia sesión primero"); return; }
+
+    dailyModalSave.disabled = true;
+    dailyModalSave.textContent = "Guardando…";
+
+    try {
+      await saveDaily(user.uid, cat, value);
+      closeDailyModal();
+    } catch (e) {
+      console.error(e);
+      alert("No se pudo guardar");
+    } finally {
+      dailyModalSave.disabled = false;
+      dailyModalSave.textContent = "Guardar";
+    }
+  });
+</script>
+
+
+
+
     <div
       id="contactModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
@@ -2574,22 +2777,232 @@
         </div>
       </div>
     </div>
-    <button
-      id="testFirestoreBtn"
-      style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1000;
-        padding: 10px;
-        background: #2ecc71;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      "
-    >
-      Probar Firestore
-    </button>
-  </body>
+    
+  
+<!-- === PG minimal patch (no UI changes) === -->
+<script>
+(function(){
+  if (window.__PG_PATCH_APPLIED__) return;
+  window.__PG_PATCH_APPLIED__ = true;
+
+  function waitForFirebaseReady(timeoutMs){
+    timeoutMs = timeoutMs || 8000;
+    return new Promise(function(resolve, reject){
+      var t0 = Date.now();
+      (function check(){
+        if (window.firebaseAuth && window.firebaseAuth.firestore && window.firebaseAuth.firestore.api) return resolve();
+        if (Date.now() - t0 > timeoutMs) return reject(new Error("Firebase no inicializó a tiempo (patch)"));
+        setTimeout(check, 30);
+      })();
+    });
+  }
+
+  function todayStr(){ return new Date().toISOString().split("T")[0]; }
+
+  waitForFirebaseReady().then(function(){
+    var FAPI = window.firebaseAuth.firestore.api;
+    var DB   = window.firebaseAuth.firestore.db;
+    var doc = FAPI.doc, setDoc = FAPI.setDoc, getDoc = FAPI.getDoc;
+
+    // Exponer referencias
+    window.PG = { DB: DB, FAPI: FAPI, doc: doc, setDoc: setDoc, getDoc: getDoc };
+
+    // --- Helpers (sobrescribir para que no fallen por DB undefined) ---
+    window.ensureUserDoc = async function(uid){
+      if (!uid) return;
+      var ref = doc(DB, "users", uid);
+      var snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          createdAt: new Date().toISOString(),
+          preferences: { locale: "es-AR" },
+          streak: { count: 0, lastEntryDate: null },
+          initialSurvey: { completedAt: null }
+        }, { merge: true });
+      }
+    };
+
+    window.setInitialSurveyDone = async function(uid, payload){
+      if (!uid) return;
+      var ref = doc(DB, "users", uid);
+      await setDoc(ref, {
+        initialSurvey: {
+          completedAt: new Date().toISOString(),
+          answers: payload || null
+        }
+      }, { merge: true });
+    };
+
+    window.getDaily = async function(uid, dateStr){
+      if (!uid) return null;
+      var ref = doc(DB, "users", uid, "footprints", dateStr);
+      var snap = await getDoc(ref);
+      return snap.exists() ? snap.data() : null;
+    };
+
+    // Si existen categorías en otro script, respétalas; sino definimos una mínima por si las dudas.
+    var CATEGORIES = window.CATEGORIES || [
+      { id: "transporte", unit: "km", factor: 0.121, label: "Transporte" },
+      { id: "energia", unit: "kWh", factor: 0.233, label: "Energía" },
+      { id: "alimentacion", unit: "comidas", factor: 2.5, label: "Alimentación" },
+      { id: "residuos", unit: "kg", factor: 0.45, label: "Residuos" }
+    ];
+
+    window.saveDaily = async function(uid, cat, value){
+      if (!uid) return;
+      var dateStr = todayStr();
+      var catDef = (window.CATEGORIES || CATEGORIES).find(function(c){ return c.id === cat; });
+      if (!catDef) throw new Error("Categoría inválida");
+      var co2e = Number(value) * Number(catDef.factor || 0);
+
+      var ref = doc(DB, "users", uid, "footprints", dateStr);
+      var current = await window.getDaily(uid, dateStr);
+
+      var byCategory = Object.assign({
+        transporte: 0, energia: 0, alimentacion: 0, ropa: 0, electronica: 0, residuos: 0
+      }, current && current.totals && current.totals.byCategory || {});
+      byCategory[cat] = (byCategory[cat] || 0) + co2e;
+
+      var inputs = Array.isArray(current && current.inputs) ? current.inputs.slice() : [];
+      inputs.push({
+        category: cat, value: Number(value), unit: catDef.unit || "", co2e: co2e,
+        source: "daily-card", at: new Date().toISOString()
+      });
+
+      var total = Object.keys(byCategory).reduce(function(a,k){ return a + (byCategory[k] || 0); }, 0);
+      var payload = {
+        date: dateStr,
+        timestamp: new Date().toISOString(),
+        totals: { co2e: Number(total.toFixed(3)), byCategory: byCategory },
+        inputs: inputs
+      };
+      await setDoc(ref, payload, { merge: true });
+
+      // Log requerido
+      console.log("[Diario] Guardado hoy:", { categoria: cat, valor: value, co2e: co2e.toFixed(2), total: payload.totals.co2e.toFixed(2) });
+
+      // Actualizar UI si existen esos nodos
+      try {
+        var totalEl = document.getElementById("dailyTotal");
+        var hintEl  = document.getElementById("dailyHint");
+        if (totalEl) totalEl.textContent = payload.totals.co2e.toFixed(2) + " kg CO₂e";
+        if (hintEl) hintEl.textContent  = "Actualizado: " + (catDef.label || cat) + " +" + co2e.toFixed(2) + " kg CO₂e";
+      } catch(e){}
+    };
+
+    // Cargar consumo del día y log a consola
+    window.loadToday = async function(uid){
+      var d = await window.getDaily(uid, todayStr());
+      if (!d) {
+        console.log("[Diario] Hoy sin registros.");
+        var totalEl = document.getElementById("dailyTotal");
+        var hintEl  = document.getElementById("dailyHint");
+        if (totalEl) totalEl.textContent = "0 kg CO₂e";
+        if (hintEl)  hintEl.textContent  = "Aún no registraste nada hoy.";
+        return;
+      }
+      var total = (d.totals && d.totals.co2e) || 0;
+      console.log("[Diario] Consumo de hoy:", d);
+      try {
+        var totalEl = document.getElementById("dailyTotal");
+        var hintEl  = document.getElementById("dailyHint");
+        if (totalEl) totalEl.textContent = Number(total).toFixed(2) + " kg CO₂e";
+        if (hintEl)  hintEl.textContent  = "Última actualización: " + (d.timestamp || "");
+      } catch(e){}
+    };
+
+    // Re-render diario cards si el proyecto ya las define; si no, no hacemos nada visual (respetar diseño)
+    if (typeof window.renderDailyCards === "function") {
+      // no toca diseño, solo aseguro que exista al menos una vez
+      try { window.renderDailyCards(); } catch(e){}
+    }
+
+    // --- Progreso: sobreescribir de forma segura para que no llame window.progressChart ---
+    window.updateProgressChart = async function(){
+      var user = window.firebaseAuth && window.firebaseAuth.auth && window.firebaseAuth.auth.currentUser;
+      if (!user) return;
+      try {
+        var history = await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
+        console.log("[Progreso] Historial:", history);
+
+        var labels = history.map(function(h){ return h.date; });
+        var values = history.map(function(h){ return Number(h.total || (h.totals && h.totals.co2e) || 0); });
+
+        var noDataEl = document.getElementById("noProgressData");
+        if (noDataEl) noDataEl.style.display = values.length ? "none" : "block";
+
+        var c = document.getElementById("progressChart");
+        if (!c || !c.getContext) return;
+        var ctx = c.getContext("2d");
+        if (window.pgProgressChart && typeof window.pgProgressChart.destroy === "function") {
+          window.pgProgressChart.destroy();
+        }
+        window.pgProgressChart = new Chart(ctx, {
+          type: "line",
+          data: { labels: labels, datasets: [{ label: "CO₂e diario", data: values, tension: 0.25 }] },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      } catch(e){
+        console.error("Error en updateProgressChart:", e);
+      }
+    };
+
+    // Hook adicional al login para cargar hoy + progreso (sin tocar tu onAuthStateChanged original)
+    try {
+      window.firebaseAuth.onAuthStateChanged(function(user){
+        if (user) {
+          window.ensureUserDoc(user.uid).then(function(){
+            return window.loadToday(user.uid);
+          }).then(function(){
+            return window.updateProgressChart();
+          }).catch(function(e){ console.warn("Patch post-login:", e); });
+        }
+      });
+    } catch(e){}
+
+  }).catch(function(e){
+    console.error(e);
+  });
+})();
+</script>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'pg-theme';
+  const root = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+
+  // 1) Aplicar preferencia guardada si existe; si no, seguir al sistema
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === 'dark' || saved === 'light') {
+    root.classList.toggle('dark', saved === 'dark');
+  }
+  // Si NO hay preferencia guardada, tu código actual ya sigue al sistema (prefers-color-scheme)
+
+  // 2) Toggle manual
+  function updateIcon() {
+    if (!btn) return;
+    btn.textContent = root.classList.contains('dark') ? '🌙' : '☀️';
+  }
+
+  if (btn) {
+    updateIcon();
+    btn.addEventListener('click', () => {
+      const isDark = root.classList.toggle('dark');
+      localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
+      updateIcon();
+      // Si tu gráfico depende del tema, lo refrescamos:
+      if (typeof updateProgressChart === 'function') updateProgressChart();
+    });
+  }
+
+  // 3) Si quieres que NO cambie con el sistema (solo respetar lo guardado),
+  // comenta las siguientes dos líneas en tu código original:
+  // window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ...)
+})();
+</script>
+
+<!-- === /PG minimal patch === -->
+
+</body>
 </html>
