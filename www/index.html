@@ -404,7 +404,63 @@
 .pg-modal-backdrop { background: rgba(0,0,0,.5); }
 
     </style>
-  </head>
+  
+  <!-- PowerGreen style guide additions -->
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800&family=SF+Pro+Text:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap" rel="stylesheet"/>
+  <style type="text/tailwindcss">
+    :root {
+      --primary-light: #254D32;
+      --secondary-light: #6B7F5B;
+      --accent-light: #A3B18A;
+      --ink-light: #1F3D2B;
+      --surface-light: #F8EBCF;
+
+      --primary-dark: #A3B18A;
+      --secondary-dark: #6B7F5B;
+      --accent-dark: #254D32;
+      --ink-dark: #F8EBCF;
+      --surface-dark: #1F3D2B;
+
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 20px;
+    }
+    .font-display { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .glass-effect { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.12); }
+  </style>
+
+
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+
+/* === Section Loader Overlay === */
+.section-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.06);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 30;
+}
+.dark .section-loader { background: rgba(255,255,255,.06); }
+.section-loader .pg-spinner {
+  width: 56px; height: 56px;
+  border-radius: 9999px;
+  border: 4px solid rgba(0,0,0,.1);
+  border-top-color: var(--primary-color);
+  animation: pgspin 1s linear infinite;
+}
+.dark .section-loader .pg-spinner { border: 4px solid rgba(255,255,255,.15); border-top-color: var(--primary-color); }
+@keyframes pgspin { to { transform: rotate(360deg); } }
+
+</style>
+</head>
   <body class="bg-surface dark:bg-gray-900 text-gray-800 dark:text-gray-200">
     
 <!-- Splash/Loader con video + logo -->
@@ -426,61 +482,78 @@
   </div>
 </div>
 
-    <header class="sticky top-0 bg-primary text-white/95 shadow-md z-40">
-  <div class="max-w-5xl mx-auto px-4">
-    <!-- App bar -->
-    <div class="h-14 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <img src="index.png" alt="PowerGreen" class="w-9 h-9 rounded-md" />
-        <h1 class="text-lg font-semibold tracking-wide">PowerGreen</h1>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <!-- Tema -->
-        <button id="themeToggle"
-          class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm"
-          title="Cambiar tema" aria-label="Cambiar tema">🌓</button>
-
-        <!-- Menú (mobile) -->
-        <button id="menuToggle" class="md:hidden px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 focus:outline-none" aria-label="Abrir menú">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 6h16M4 12h16m0 6H4" />
-          </svg>
-        </button>
-
-        <!-- Cerrar sesión (sutil, no rojo) -->
-        <button id="logoutBtn"
-          class="hidden md:inline-flex px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm">
-          Cerrar sesión
-        </button>
-      </div>
-    </div>
-
-    <!-- Tabs (chips) -->
-    <nav id="mobileMenu"
-         class="hidden md:block overflow-x-auto no-scrollbar py-2 -mx-1">
-      <ul class="grid grid-cols-2 md:flex md:flex-wrap gap-2 px-1">
-        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="calculator">Calculadora</button></li>
-        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="tips">Consejos</button></li>
-        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="challenges">Retos</button></li>
-        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="progress">Progreso</button></li>
-        <li><button class="tab-button px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 whitespace-nowrap focus:outline-none" data-tab="daily">Diario</button></li>
-
-        <!-- Cerrar sesión extra en mobile (dentro del menú) -->
-        <li class="md:hidden">
-          <button id="logoutBtnMobile"
-            class="w-full px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm">
-            Cerrar sesión
-          </button>
-        </li>
-      </ul>
-    </nav>
+    <header class="sticky top-0 z-40 glass-effect">
+  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-end">
+    <button id="logoutBtn"
+      class="px-3 py-1.5 rounded-full bg-primary text-white text-sm">
+      Cerrar sesión
+    </button>
   </div>
 </header>
 
 
     <main class="container mx-auto px-4 py-6">
+
+<!-- === Inicio (Home) — estilo Stitch integrado === -->
+<section id="home" class="tab-content py-4">
+  <div class="container mx-auto max-w-md px-4">
+    <!-- Saludo + CTA recalcular -->
+    <div class="mb-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Hola, <span id="homeUserName">Eco-amigx</span></h1>
+      <button id="recalcBtn" class="inline-flex items-center rounded-xl bg-[var(--primary-color)] py-2 px-3 text-sm font-bold text-black shadow-sm active:scale-95">
+        <span class="material-symbols-outlined mr-1">calculate</span> Calcula tu huella nuevamente
+      </button>
+    </div>
+
+    <!-- Huella actual -->
+    <section class="mb-6 rounded-2xl bg-white dark:bg-gray-900 p-4 shadow-sm backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold text-[var(--text-primary)]">Huella actual</h2>
+        <div id="homeDelta" class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-[var(--accent-color)] hidden">
+          <span class="material-symbols-outlined text-sm mr-1">arrow_downward</span><span id="homeDeltaText"></span>
+        </div>
+      </div>
+      <div class="flex items-end justify-between">
+        <p class="text-4xl font-bold text-[var(--text-primary)]">
+          <span id="homeTotal">—</span>
+          <span class="text-base font-normal text-[var(--text-secondary)]">kg CO₂e</span>
+        </p>
+        <p class="text-sm text-[var(--text-secondary)]">Actualizado: <span id="homeDate">—</span></p>
+      </div>
+    </section>
+
+    <!-- Desglose -->
+    <section class="mb-6">
+      <h3 class="text-lg font-bold text-[var(--text-primary)] mb-3">Desglose de categorías</h3>
+      <div class="grid grid-cols-2 gap-4" id="homeBreakdown">
+        <!-- Tarjetas generadas por JS -->
+      </div>
+    </section>
+
+    <!-- Acciones rápidas -->
+    <section class="mb-6">
+      <h3 class="text-lg font-bold text-[var(--text-primary)] mb-3">Acciones rápidas</h3>
+      <div class="space-y-3">
+        <button id="quickAddBtn" class="flex w-full items-center justify-center rounded-xl bg-[var(--primary-color)] py-3 px-4 text-base font-bold text-black shadow-sm active:scale-95">
+          <span class="material-symbols-outlined mr-2">add_circle</span> Cargar hoy
+        </button>
+        <button id="quickChallengeBtn" class="flex w-full items-center justify-center rounded-xl bg-white dark:bg-gray-900 py-3 px-4 text-base font-bold text-[var(--text-primary)] shadow-sm active:scale-95">
+          <span class="material-symbols-outlined mr-2">emoji_events</span> Unirse a un reto
+        </button>
+      </div>
+    </section>
+
+    <!-- Consejos / Comunidad placeholders -->
+    <section>
+      <h3 class="text-lg font-bold text-[var(--text-primary)] mb-3">Consejos destacados</h3>
+      <div class="flex flex-col items-center justify-center rounded-2xl bg-white dark:bg-gray-900 p-6 text-center shadow-sm">
+        <span class="material-symbols-outlined text-5xl text-[var(--accent-color)] mb-2">eco</span>
+        <p class="text-base font-semibold text-[var(--text-primary)] mb-1">Sin consejos destacados</p>
+        <p class="text-sm text-[var(--text-secondary)]">Pronto tendremos consejos para ti.</p>
+      </div>
+    </section>
+  </div>
+</section>
       <!-- Sección de Login -->
       <section id="auth-section" class="py-6">
         <div
@@ -1455,1071 +1528,585 @@
         </div>
       </section>
 
-      <!-- Sección de Progreso -->
-      <section id="progress" class="tab-content py-6">
-        <h2 class="text-2xl font-bold mb-6 text-primary">Tu Progreso</h2>
+      
+<!-- === Progreso (Stitch-like) === -->
+<section id="progress" class="tab-content py-6">
+  <div class="max-w-md mx-auto px-4">
+    <header class="flex items-center p-1 pb-4 justify-between">
+      <h2 class="text-xl font-bold leading-tight flex-1 text-center">Progreso</h2>
+    </header>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-          <h3 class="text-xl font-semibold mb-4">
-            Huella de Carbono en el Tiempo
-          </h3>
-          <div class="h-64">
-            <canvas id="progressChart"></canvas>
+    <main class="space-y-6">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-[var(--secondary-color,#1a4d2e)]/10 dark:bg-[var(--secondary-color,#1a4d2e)] p-4 rounded-3xl flex flex-col gap-2 border border-[var(--primary-color)]/20">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-3xl text-[var(--primary-color)]">star</span>
+            <p class="text-[var(--text-secondary)] text-sm font-medium">Puntos</p>
           </div>
-          <p
-            id="noProgressData"
-            class="text-center py-4 text-gray-500 dark:text-gray-400"
-          >
-            Registra tu huella en el tiempo calculándola regularmente.
-          </p>
+          <p id="pgPoints" class="text-3xl font-bold tracking-tight">0</p>
+          <p id="pgPointsDelta" class="text-[var(--primary-color)] text-sm font-medium hidden">+0%</p>
         </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-          <h3 class="text-xl font-semibold mb-4">Historial de Retos</h3>
-          <div id="challengeHistory" class="space-y-4">
-            <p class="text-center py-4 text-gray-500 dark:text-gray-400">
-              Aún no has completado ningún reto.
-            </p>
+        <div class="bg-[var(--secondary-color,#1a4d2e)]/10 dark:bg-[var(--secondary-color,#1a4d2e)] p-4 rounded-3xl flex flex-col gap-2 border border-[var(--primary-color)]/20">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-3xl text-[var(--primary-color)]">local_fire_department</span>
+            <p class="text-[var(--text-secondary)] text-sm font-medium">Racha</p>
           </div>
+          <p id="pgStreak" class="text-3xl font-bold tracking-tight">0</p>
+          <p id="pgStreakDelta" class="text-[var(--primary-color)] text-sm font-medium hidden">+0</p>
         </div>
+      </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h3 class="text-xl font-semibold mb-4">Tu Impacto</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div
-              class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-5 text-center"
-            >
-              <div class="text-4xl font-bold text-primary mb-2">0</div>
-              <p class="text-gray-600 dark:text-gray-400">
-                Toneladas de CO₂ ahorradas
-              </p>
-            </div>
-            <div
-              class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-5 text-center"
-            >
-              <div class="text-4xl font-bold text-primary mb-2">0</div>
-              <p class="text-gray-600 dark:text-gray-400">Retos completados</p>
-            </div>
-            <div
-              class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-5 text-center"
-            >
-              <div class="text-4xl font-bold text-primary mb-2">0</div>
-              <p class="text-gray-600 dark:text-gray-400">
-                Días de seguimiento
-              </p>
-            </div>
+      <div class="bg-[var(--secondary-color,#1a4d2e)]/10 dark:bg-[var(--secondary-color,#1a4d2e)] p-6 rounded-3xl flex items-center justify-center border border-[var(--primary-color)]/20 relative">
+        <div class="ring-outer-card"><div class="progress-ring w-[140px] h-[140px] relative">
+          <svg class="w-full h-full" viewBox="0 0 100 100">
+            <circle class="text-[var(--accent-color,#287a4a)]" cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" stroke-width="10"></circle>
+            <circle id="pgRing" class="progress-ring-circle text-[var(--primary-color)]" cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" stroke-linecap="round" stroke-width="10" />
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <p class="text-[var(--text-secondary)] text-sm">Objetivo diario</p>
+            <p class="text-2xl font-bold"><span id="pgDaily">0</span>/<span id="pgGoal">100</span></p>
           </div>
         </div>
-      </section>
+      </div>
+
+      <div class="bg-[var(--secondary-color,#1a4d2e)]/10 dark:bg-[var(--secondary-color,#1a4d2e)] p-6 rounded-3xl border border-[var(--primary-color)]/20">
+        <div class="flex flex-col gap-2">
+          <p class="text-base font-medium text-[var(--text-secondary)]">Emisiones de carbono</p>
+          <p id="pgChange" class="text-4xl font-bold tracking-tighter">—</p>
+          <div class="flex gap-1 items-center">
+            <p class="text-[var(--text-secondary)] text-sm font-normal">vs registro anterior</p>
+            <span id="pgChangeIcon" class="material-symbols-outlined text-base">trending_flat</span>
+            <p id="pgChangePct" class="text-sm font-medium">0%</p>
+          </div>
+        </div>
+        <!-- Hidden canvas to preserve existing logic if needed -->
+        <div class="mt-4 h-40">
+          <canvas id="progressChart"></canvas>
+          <p id="noProgressData" class="text-center py-4 text-gray-500 dark:text-gray-400">Registra tu huella en el tiempo calculándola regularmente.</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold px-1 pb-2 pt-2">Insignias</h3>
+        <div class="flex gap-3 p-1 flex-wrap">
+          <div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[var(--accent-color,#287a4a)]/20 pl-3 pr-4">
+            <span class="material-symbols-outlined text-[var(--primary-color)]">eco</span>
+            <p class="text-[var(--primary-color)] text-sm font-medium">Principiante</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
       
     </main>
 
-    <footer class="bg-dark text-white py-6 mt-10">
-      <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-          <div class="mb-4 md:mb-0">
-            <h2 class="text-xl font-bold text-primary mb-2">PowerGreen</h2>
-            <p class="text-sm text-gray-400">
-              Haciendo un futuro sostenible accesible para todos.
-            </p>
-          </div>
-          <div class="flex space-x-4">
-            <a
-              href="#"
-              id="aboutLink"
-              class="hover:text-primary text-green-600 transition-colors duration-300"
-              >Acerca de</a
-            >
-            <a
-              href="#"
-              target="_blank"
-              class="hover:text-primary text-green-600 transition-colors duration-300"
-              >Privacidad</a
-            >
-            <a
-              href="#"
-              id="contactLink"
-              class="hover:text-primary text-green-600 transition-colors duration-300"
-              >Contacto</a
-            >
-          </div>
-        </div>
-        <div class="text-center mt-6 text-sm text-gray-400">
-          <p>© 2025 PowerGreen. Todos los derechos reservados.</p>
-        </div>
-      </div>
-    </footer>
+    <footer id="bottomNav" class="sticky bottom-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-200">
+  <nav class="mx-auto flex h-16 max-w-md justify-around">
+    <a class="flex flex-1 flex-col items-center justify-center gap-0.5 tab-button text-[var(--primary-color)]" data-tab="home" href="#">
+      <span class="material-symbols-outlined">home</span>
+      <p class="text-[10px] font-medium">Inicio</p>
+    </a>
+    <a class="flex flex-1 flex-col items-center justify-center gap-0.5 tab-button text-[var(--text-secondary)] hover:text-[var(--primary-color)]" data-tab="daily" href="#">
+      <span class="material-symbols-outlined">event_note</span>
+      <p class="text-[10px] font-medium">Diario</p>
+    </a>
+    <a class="flex flex-1 flex-col items-center justify-center gap-0.5 tab-button text-[var(--text-secondary)] hover:text-[var(--primary-color)]" data-tab="progress" href="#">
+      <span class="material-symbols-outlined">bar_chart</span>
+      <p class="text-[10px] font-medium">Progreso</p>
+    </a>
+    <a class="flex flex-1 flex-col items-center justify-center gap-0.5 tab-button text-[var(--text-secondary)] hover:text-[var(--primary-color)]" data-tab="tips" href="#">
+      <span class="material-symbols-outlined">tips_and_updates</span>
+      <p class="text-[10px] font-medium">Consejos</p>
+    </a>
+    <a class="flex flex-1 flex-col items-center justify-center gap-0.5 tab-button text-[var(--text-secondary)] hover:text-[var(--primary-color)]" data-tab="challenges" href="#">
+      <span class="material-symbols-outlined">military_tech</span>
+      <p class="text-[10px] font-medium">Desafíos</p>
+    </a>
+  </nav>
+</footer>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const globalLoader = document.getElementById("globalLoader");
-        // Navegación y gestión de pestañas
-        const authSection = document.getElementById("auth-section");
-        const mainContent = document.querySelector(
-          "main > section:not(#auth-section)"
-        );
-        const header = document.querySelector("header");
-        const footer = document.querySelector("footer");
-        const tabButtons = document.querySelectorAll(".tab-button");
-        const tabContents = document.querySelectorAll(".tab-content");
-        const menuToggle = document.getElementById("menuToggle");
-        const mobileMenu = document.getElementById("mobileMenu");
-        const getStartedBtn = document.getElementById("getStartedBtn");
-        const welcomeSection = document.getElementById("welcome");
-        const calculateBtn = document.getElementById("calculateBtn");
-        const resultsSection = document.getElementById("resultsSection");
-        const aboutLink = document.getElementById("aboutLink");
 
-        const auth = window.firebaseAuth;
-        globalLoader.style.display = "flex";
+document.addEventListener("DOMContentLoaded", function () {
+  // --- Safe element helpers ---
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const safeOn = (el, ev, fn) => { if (el) el.addEventListener(ev, fn); };
 
+  // --- Core UI elements ---
+  const globalLoader = document.getElementById("globalLoader");
+  const header = document.querySelector("header");
+  const footer = document.getElementById("bottomNav");
+  const authSection = document.getElementById("auth-section");
+  const tabContents = $$(".tab-content");
 
-        
+  // Bottom nav buttons
+  const bottomTabs = footer ? footer.querySelectorAll("[data-tab]") : [];
 
-// ---- Esperar a que Firebase esté listo y recién ahí enganchar onAuthStateChanged ----
-function waitForFirebaseReady() {
-  return new Promise(function (resolve, reject) {
-    var t0 = Date.now();
-    (function check() {
-      if (window.firebaseAuth && window.firebaseAuth.firestore && window.firebaseAuth.firestore.api) return resolve();
-      if (Date.now() - t0 > 7000) return reject(new Error("Firebase no inicializó a tiempo"));
-      setTimeout(check, 40);
-    })();
+  // Calculator bits
+  const calculateBtn = document.getElementById("calculateBtn");
+  const resultsSection = document.getElementById("resultsSection");
+
+  // Range inputs
+  const driveDistance = document.getElementById("driveDistance");
+  const drivingValue = document.getElementById("drivingValue");
+  const flightsPerYear = document.getElementById("flightsPerYear");
+  const flightsValue = document.getElementById("flightsValue");
+  const electricityUsage = document.getElementById("electricityUsage");
+  const electricityValue = document.getElementById("electricityValue");
+
+  // Theme toggle
+  const themeToggle = document.getElementById("themeToggle");
+  safeOn(themeToggle, "click", () => {
+    const root = document.documentElement;
+    const isDark = root.classList.toggle("dark");
+    try { localStorage.setItem("pg-theme", isDark ? "dark" : "light"); } catch {}
   });
-}
 
-// Variables que vamos a asignar cuando Firebase esté listo
-let DB, FAPI, doc, setDoc, getDoc;
-
-// REGISTRO del onAuthStateChanged después de que Firebase exista
-waitForFirebaseReady().then(function () {
-  FAPI = window.firebaseAuth.firestore.api;
-  DB   = window.firebaseAuth.firestore.db;
-  ({ doc, setDoc, getDoc } = FAPI);
-
-  window.firebaseAuth.onAuthStateChanged(function (user) {
-    // Fade-out del loader/splash (diseño se mantiene)
-    globalLoader.style.opacity = "0";
-    setTimeout(function () {
-      globalLoader.style.display = "none";
-
-      if (user) {
-        // UI logueado (idéntico a lo que ya tenías)
-        authSection.style.display = "none";
-        mainContent.style.display = "block";
-        header.style.display = "flex";
-        footer.style.display = "block";
-        mobileMenu.classList.remove("hidden");
-        document.getElementById("logoutBtn").classList.remove("hidden");
-
-        // Asegurar doc de usuario + decidir pantalla SIN async/await
-        ensureUserDoc(user.uid)
-          .then(function () {
-            return getDoc(doc(DB, "users", user.uid));
-          })
-          .then(function (userSnap) {
-            var completed = userSnap.exists() && userSnap.data() && userSnap.data().initialSurvey && userSnap.data().initialSurvey.completedAt;
-            // si ya pegaste renderDailyCards(), podés llamarlo aquí (no cambia diseño)
-            if (typeof renderDailyCards === "function") renderDailyCards();
-            showTab(completed ? "daily" : "calculator");
-
-            // si tenés funciones de progreso, refrescarlas aquí
-            if (typeof updateProgressChart === "function") updateProgressChart();
-            if (typeof updateProgressStats === "function") updateProgressStats();
-          })
-          .catch(function (e) {
-            console.error(e);
-            showTab("calculator");
-          });
-
+  // --- Tab handling ---
+  function activateNav(tabId) {
+    bottomTabs.forEach(a => {
+      if (a.getAttribute("data-tab") === tabId) {
+        a.classList.add("text-[var(--primary-color)]");
+        a.classList.remove("text-[var(--text-secondary)]");
       } else {
-        // UI no logueado (idéntico a lo que ya tenías)
-        authSection.style.display = "block";
-        mainContent.style.display = "none";
-        header.style.display = "none";
-        footer.style.display = "none";
-        document.getElementById("logoutBtn").classList.add("hidden");
+        a.classList.remove("text-[var(--primary-color)]");
+        a.classList.add("text-[var(--text-secondary)]");
       }
-    }, 500);
+    });
+  }
+
+  function showTab(tabId) {
+    tabContents.forEach((tab) => tab.classList.remove("active"));
+    const t = document.getElementById(tabId);
+    if (t) t.classList.add("active");
+    activateNav(tabId);
+    // keep footer visible for all tabs (unless logged out)
+    if (footer) footer.style.display = "block";
+  }
+  window.showTab = showTab;
+
+  bottomTabs.forEach(btn => safeOn(btn, "click", (e) => {
+    e.preventDefault();
+    const tabId = btn.getAttribute("data-tab");
+    if (tabId) showTab(tabId);
+  }));
+
+  
+  // Trigger data loads on tab switch
+  bottomTabs.forEach(btn => safeOn(btn, "click", (e) => {
+    e.preventDefault();
+    const tabId = btn.getAttribute("data-tab");
+    if (tabId) {
+      showTab(tabId);
+      try {
+        if (tabId === "progress" && typeof updateProgressChart === "function") { updateProgressChart(); }
+        if (tabId === "home" && typeof pgLoadHomeDashboard === "function") { pgLoadHomeDashboard(); }
+        if (tabId === "daily" && typeof loadToday === "function") {
+          const user = window.firebaseAuth?.auth?.currentUser;
+          if (user) loadToday(user.uid);
+        }
+      } catch (e) { console.warn("Tab data refresh:", e); }
+    }
+  }));
+// Quick actions from Home
+  safeOn(document.getElementById("recalcBtn"), "click", () => showTab("calculator"));
+  safeOn(document.getElementById("quickAddBtn"), "click", () => showTab("daily"));
+  safeOn(document.getElementById("quickChallengeBtn"), "click", () => showTab("challenges"));
+
+  // --- Auth handlers ---
+  const loginBtn = document.getElementById("loginBtn");
+  const registerBtn = document.getElementById("registerBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const showRegister = document.getElementById("showRegister");
+  const showLogin = document.getElementById("showLogin");
+  const authMessage = document.getElementById("authMessage");
+
+  safeOn(loginBtn, "click", async () => {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    try {
+      await window.firebaseAuth.signInWithEmailAndPassword(email, password);
+      if (authMessage) {
+        authMessage.textContent = "Inicio de sesión exitoso!";
+        authMessage.className = "mt-4 text-center text-green-500";
+        authMessage.classList.remove("hidden");
+      }
+    } catch (error) {
+      let message = "Error al iniciar sesión";
+      if (error.code === "auth/invalid-email") message = "Email inválido";
+      if (error.code === "auth/user-not-found") message = "Usuario no encontrado";
+      if (error.code === "auth/wrong-password") message = "Contraseña incorrecta";
+      if (authMessage) {
+        authMessage.textContent = message;
+        authMessage.className = "mt-4 text-center text-red-500";
+        authMessage.classList.remove("hidden");
+      }
+    }
   });
-}).catch(function (e) {
-  console.error(e);
+
+  safeOn(registerBtn, "click", async () => {
+    const email = document.getElementById("registerEmail").value;
+    const password = document.getElementById("registerPassword").value;
+    if (password.length < 6) {
+      if (authMessage) {
+        authMessage.textContent = "La contraseña debe tener al menos 6 caracteres";
+        authMessage.className = "mt-4 text-center text-red-500";
+        authMessage.classList.remove("hidden");
+      }
+      return;
+    }
+    try {
+      await window.firebaseAuth.createUserWithEmailAndPassword(email, password);
+      if (authMessage) {
+        authMessage.textContent = "Registro exitoso!";
+        authMessage.className = "mt-4 text-center text-green-500";
+        authMessage.classList.remove("hidden");
+      }
+      // swap to login
+      const rf = document.getElementById("registerForm");
+      const lf = document.getElementById("loginForm");
+      if (rf) rf.classList.add("hidden");
+      if (lf) lf.classList.remove("hidden");
+    } catch (error) {
+      let message = "Error al registrarse";
+      if (error.code === "auth/email-already-in-use") message = "El email ya está en uso";
+      if (error.code === "auth/invalid-email") message = "Email inválido";
+      if (error.code === "auth/weak-password") message = "Contraseña débil";
+      if (authMessage) {
+        authMessage.textContent = message;
+        authMessage.className = "mt-4 text-center text-red-500";
+        authMessage.classList.remove("hidden");
+      }
+    }
+  });
+
+  safeOn(showRegister, "click", () => {
+    const rf = document.getElementById("registerForm");
+    const lf = document.getElementById("loginForm");
+    if (lf) lf.classList.add("hidden");
+    if (rf) rf.classList.remove("hidden");
+    if (authMessage) authMessage.classList.add("hidden");
+  });
+
+  safeOn(showLogin, "click", () => {
+    const rf = document.getElementById("registerForm");
+    const lf = document.getElementById("loginForm");
+    if (rf) rf.classList.add("hidden");
+    if (lf) lf.classList.remove("hidden");
+    if (authMessage) authMessage.classList.add("hidden");
+  });
+
+  safeOn(logoutBtn, "click", async () => {
+    try { await window.firebaseAuth.signOut(); } catch (e) { console.error(e); }
+    tabContents.forEach((tab) => tab.classList.remove("active"));
+    if (footer) footer.style.display = "none";
+  });
+
+  // --- Firebase readiness + auth state ---
+  function waitForFirebaseReady(timeoutMs) {
+    timeoutMs = timeoutMs || 8000;
+    return new Promise((resolve, reject) => {
+      const t0 = Date.now();
+      (function check() {
+        if (window.firebaseAuth && window.firebaseAuth.firestore && window.firebaseAuth.firestore.api) return resolve();
+        if (Date.now() - t0 > timeoutMs) return reject(new Error("Firebase no inicializó a tiempo"));
+        setTimeout(check, 40);
+      })();
+    });
+  }
+
+  function setLoggedInUI() {
+    if (globalLoader) { globalLoader.style.opacity = "0"; setTimeout(() => { globalLoader.style.display = "none"; }, 500); }
+    if (authSection) authSection.style.display = "none";
+    if (header) header.style.display = "flex";
+    if (footer) footer.style.display = "block";
+    showTab("home");
+    
+    try { if (typeof showSectionLoader === 'function') showSectionLoader('home'); } catch(e) {}
+pgLoadHomeDashboard();
+    pgRenderProgressScreen();
+    if (typeof renderDailyCards === "function") renderDailyCards();
+  }
+
+  function setLoggedOutUI() {
+    if (authSection) authSection.style.display = "block";
+    tabContents.forEach((tab) => tab.classList.remove("active"));
+    if (header) header.style.display = "none";
+    if (footer) footer.style.display = "none";
+  }
+
+  waitForFirebaseReady().then(() => {
+    window.firebaseAuth.onAuthStateChanged((user) => {
+      if (user) setLoggedInUI();
+      else setLoggedOutUI();
+    });
+  }).catch((e) => {
+    console.error(e);
+    setLoggedOutUI();
+  });
+
+  // --- Slider displays ---
+  safeOn(driveDistance, "input", function(){ if (drivingValue) drivingValue.textContent = `${this.value} km`; });
+  safeOn(flightsPerYear, "input", function(){ if (flightsValue) flightsValue.textContent = `${this.value} vuelos`; });
+  safeOn(electricityUsage, "input", function(){ if (electricityValue) electricityValue.textContent = `${this.value} kWh`; });
+
+  // --- Tips filters ---
+  const tipFilters = document.querySelectorAll(".tip-filter");
+  const tipCards = document.querySelectorAll(".tip-card");
+  tipFilters.forEach(btn => safeOn(btn, "click", function(){
+    const category = this.getAttribute("data-category");
+    tipFilters.forEach(b=>{
+      b.classList.remove("active","bg-primary","text-white");
+      b.classList.add("bg-gray-200","dark:bg-gray-700","text-gray-800","dark:text-white");
+    });
+    this.classList.add("active","bg-primary","text-white");
+    this.classList.remove("bg-gray-200","dark:bg-gray-700","text-gray-800","dark:text-white");
+    tipCards.forEach(card => {
+      const ok = category === "all" || card.getAttribute("data-category") === category;
+      card.style.display = ok ? "block" : "none";
+    });
+  }));
+
+  // --- Chart + Calculate ---
+  let footprintChart = null;
+  function createFootprintChart(data) {
+    const canvas = document.getElementById("footprintChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (footprintChart) footprintChart.destroy();
+    footprintChart = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Transporte","Energía en el Hogar","Alimentación","Ropa","Electrónicos","Residuos"],
+        datasets: [{ data, backgroundColor: ["#3498DB","#F1C40F","#2ECC71","#9B59B6","#FFA500","#E74C3C"], borderWidth: 1 }],
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "right" } } }
+    });
+  }
+
+  function formatCategoryName(category) {
+    const names = { transport:"Transporte", energy:"Energía", food:"Alimentación", consumption:"Consumo", waste:"Residuos" };
+    return names[category] || category;
+  }
+  function getImprovementSuggestion(category) {
+    const suggestions = {
+      transport: "Usa más transporte público o compartido.",
+      energy: "Pasa a LED y electrodomésticos eficientes.",
+      food: "Reduce porciones de carne roja.",
+      consumption: "Compra menos y de mejor calidad.",
+      waste: "Recicla mejor y considerá compostar.",
+    };
+    return suggestions[category] || "Busca reducir el consumo en esta área.";
+  }
+  function generateImprovementAreas(d) {
+    const target = document.getElementById("improvementAreas");
+    if (!target) return;
+    target.innerHTML = "";
+    const categories = Object.entries(d).sort((a,b)=>b[1]-a[1]);
+    for (let i=0;i<Math.min(3,categories.length);i++) {
+      const [cat] = categories[i];
+      const li = document.createElement("li");
+      li.className = "text-gray-700 dark:text-gray-300";
+      li.innerHTML = `<strong>${formatCategoryName(cat)}:</strong> ${getImprovementSuggestion(cat)}`;
+      target.appendChild(li);
+    }
+  }
+
+  // Home dashboard from Firestore (uses window.firebaseAuth.firestore.getFootprintHistory)
+  async function pgLoadHomeDashboard(){
+    const user = window.firebaseAuth?.auth?.currentUser;
+    const totalEl = document.getElementById('homeTotal');
+    const dateEl = document.getElementById('homeDate');
+    const deltaChip = document.getElementById('homeDelta');
+    const deltaText = document.getElementById('homeDeltaText');
+    const breakdown = document.getElementById('homeBreakdown');
+    if(!user || !breakdown || !totalEl) return;
+    try{
+      const history = await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
+      if(!history.length){
+        totalEl.textContent = '—';
+        if (dateEl) dateEl.textContent = '—';
+        breakdown.innerHTML = buildBreakdownCards(null);
+        return;
+      }
+      const latest = history[0];
+      const prev   = history[1] || null;
+      const total  = Number(latest.total ?? latest?.totals?.co2e ?? 0);
+      const date   = latest.date || (latest.timestamp ? new Date(latest.timestamp.seconds? latest.timestamp.seconds*1000 : latest.timestamp).toISOString().substring(0,10) : '');
+      totalEl.textContent = total.toFixed(1);
+      if (dateEl) dateEl.textContent = date || '—';
+      if(prev && deltaChip && deltaText){
+        const prevTotal = Number(prev.total ?? prev?.totals?.co2e ?? 0) || 0;
+        const diff = prevTotal ? ((total - prevTotal)/prevTotal)*100 : 0;
+        deltaText.textContent = `${Math.abs(diff).toFixed(0)}% ${diff<=0?'vs anterior':'más que anterior'}`;
+        deltaChip.classList.remove('hidden');
+        const icon = deltaChip.querySelector('.material-symbols-outlined');
+        if (icon) icon.textContent = diff<=0? 'arrow_downward':'arrow_upward';
+      }
+      breakdown.innerHTML = buildBreakdownCards(latest);
+    }catch(e){ console.error('Home dashboard error', e); }
+  }
+
+  function buildBreakdownCards(entry){
+    const cats = [
+      {key:'transport',  keyES:'transporte',  label:'Transporte',  icon:'directions_car',  bg:'bg-blue-100',    color:'text-blue-600'},
+      {key:'energy',     keyES:'energia',     label:'Energía',     icon:'lightbulb',       bg:'bg-yellow-100',  color:'text-yellow-600'},
+      {key:'food',       keyES:'alimentacion',label:'Alimentación',icon:'restaurant',      bg:'bg-red-100',     color:'text-red-600'},
+      {key:'waste',      keyES:'residuos',    label:'Residuos',    icon:'delete',          bg:'bg-purple-100',  color:'text-purple-600'},
+    ];
+    const byCat = entry ? (entry.categories || entry?.totals?.byCategory || {}) : {};
+    const total = Number(entry ? (entry.total ?? entry?.totals?.co2e ?? 1) : 1);
+    function valFor(k, kES){ return Number(byCat[k] ?? byCat[kES] ?? 0); }
+    return cats.map(c=>{
+      const v = valFor(c.key, c.keyES);
+      const bar = Math.max(0, Math.min(100, Math.round((v>0? v : 0) / total * 100)));
+      return `<div class="rounded-2xl bg-white dark:bg-gray-900 p-4 shadow-sm">
+        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full ${c.bg} ${c.color}">
+          <span class="material-symbols-outlined">${c.icon}</span>
+        </div>
+        <p class="font-semibold text-[var(--text-primary)]">${c.label}</p>
+        <p class="text-sm text-[var(--text-secondary)]">${v ? v.toFixed(2)+' kg CO₂e' : 'Sin datos'}</p>
+        <div class="mt-2 h-1 w-full rounded-full bg-gray-200 overflow-hidden"><div style="width:${bar}%" class="h-1 bg-[var(--primary-color)]"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function pgRenderProgressScreen(){
+    const ring = document.getElementById('pgRing');
+    if(!ring) return;
+    const daily = document.getElementById('pgDaily');
+    const goal  = document.getElementById('pgGoal');
+    const rc = 45; const circ = 2 * Math.PI * rc;
+    (async ()=>{
+      const user = window.firebaseAuth?.auth?.currentUser;
+      if(!user){ ring.style.strokeDasharray = circ; ring.style.strokeDashoffset = circ; return; }
+      const today = new Date().toISOString().slice(0,10);
+      const docSnap = await window.getDaily(user.uid, today);
+      const val = Number(docSnap?.totals?.co2e ?? 0);
+      const g = 100;
+      if (daily) daily.textContent = Math.round(val);
+      if (goal) goal.textContent = g;
+      const pct = Math.max(0, Math.min(100, (val/g)*100));
+      ring.style.strokeDasharray = circ;
+      ring.style.strokeDashoffset = circ - (pct/100)*circ;
+      // change vs previous record
+      try {
+        const history = await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
+        if(history.length>1){
+          const a = Number(history[0].total ?? history[0]?.totals?.co2e ?? 0);
+          const b = Number(history[1].total ?? history[1]?.totals?.co2e ?? 0);
+          const diff = a-b;
+          const pctc = b ? (diff/b)*100 : 0;
+          const changeEl = document.getElementById('pgChange');
+          const changePct = document.getElementById('pgChangePct');
+          const icon = document.getElementById('pgChangeIcon');
+          if (changeEl) changeEl.textContent = (diff>=0? '+' : '') + diff.toFixed(1);
+          if (changePct) changePct.textContent = (pctc>=0? '+' : '') + pctc.toFixed(0) + '%';
+          if (icon) {
+            icon.textContent = diff>=0 ? 'arrow_upward' : 'arrow_downward';
+            icon.classList.toggle('text-red-500', diff>=0);
+            icon.classList.toggle('text-green-500', diff<0);
+          }
+        }
+      } catch(e){}
+    })();
+  }
+  window.pgLoadHomeDashboard = pgLoadHomeDashboard;
+  window.pgRenderProgressScreen = pgRenderProgressScreen;
+
+  // Calculate and save
+  safeOn(calculateBtn, "click", async function(){
+    const driving = parseInt(driveDistance.value) * 0.0002;
+    const flights = parseInt(flightsPerYear.value) * 0.5;
+    const publicTransport = 0.2 - parseInt(document.getElementById("publicTransport").value) * 0.05;
+    const electricity = parseInt(electricityUsage.value) * 0.0005;
+    const renewableEnergy = parseInt(document.getElementById("renewableEnergy").value) * 0.3;
+    const dietImpact = parseInt(document.getElementById("dietType").value) * 0.5;
+    const clothingImpact = parseInt(document.getElementById("clothingHabits").value) * 0.2;
+    const electronicsImpact = parseInt(document.getElementById("electronicsHabits").value) * 0.3;
+    const recyclingImpact = 0.5 - parseInt(document.getElementById("recyclingHabits").value) * 0.15;
+
+    const transportTotal = driving + flights + publicTransport;
+    const energyTotal = electricity - renewableEnergy;
+    const foodTotal = dietImpact;
+    const consumptionTotal = clothingImpact + electronicsImpact;
+    const wasteTotal = recyclingImpact;
+
+    const total = Math.round((transportTotal + energyTotal + foodTotal + consumptionTotal + wasteTotal) * 10) / 10;
+
+    const totalEl = document.getElementById("totalCarbonFootprint");
+    if (totalEl) totalEl.textContent = total;
+    if (resultsSection) resultsSection.classList.remove("hidden");
+
+    createFootprintChart([transportTotal, energyTotal, foodTotal, clothingImpact, electronicsImpact, wasteTotal]);
+    generateImprovementAreas({ transport:transportTotal, energy:energyTotal, food:foodTotal, consumption:consumptionTotal, waste:wasteTotal });
+    if (resultsSection) resultsSection.scrollIntoView({ behavior: "smooth" });
+
+    // Save to Firestore if logged in
+    const user = window.firebaseAuth?.auth?.currentUser;
+    const saveResultsBtn = document.getElementById("saveResultsBtn");
+    if (user) {
+      const footprintData = {
+        total: total,
+        categories: { transport: transportTotal, energy: energyTotal, food: foodTotal, clothing: clothingImpact, electronics: electronicsImpact, waste: wasteTotal },
+        details: {
+          driving: parseInt(driveDistance.value),
+          flights: parseInt(flightsPerYear.value),
+          publicTransport: document.getElementById("publicTransport").value,
+          electricity: parseInt(electricityUsage.value),
+          renewableEnergy: document.getElementById("renewableEnergy").value,
+          dietType: document.getElementById("dietType").value,
+          clothingHabits: document.getElementById("clothingHabits").value,
+          electronicsHabits: document.getElementById("electronicsHabits").value,
+          recyclingHabits: document.getElementById("recyclingHabits").value,
+        },
+        date: new Date().toISOString().split("T")[0],
+        timestamp: new Date(),
+      };
+      try {
+        if (saveResultsBtn) { saveResultsBtn.textContent = "Guardando..."; saveResultsBtn.disabled = true; }
+        await window.setInitialSurveyDone?.(user.uid, footprintData?.details);
+        const ok = await window.firebaseAuth.firestore.saveFootprint(user.uid, footprintData);
+        if (saveResultsBtn) saveResultsBtn.textContent = ok ? "¡Resultados Guardados!" : "Error al guardar";
+        pgLoadHomeDashboard();
+        pgRenderProgressScreen();
+        try { if (typeof showSectionLoader === 'function') showSectionLoader('progress'); } catch(e){}
+        if (typeof updateProgressChart === "function") updateProgressChart();
+        try { if (typeof hideSectionLoader === 'function') hideSectionLoader('progress'); } catch(e){}
+        setTimeout(() => { if (saveResultsBtn) { saveResultsBtn.textContent = "Guardar Resultados"; saveResultsBtn.disabled = false; } }, 1800);
+      } catch (e) {
+        console.error("Error al guardar huella:", e);
+        if (saveResultsBtn) { saveResultsBtn.textContent = "Error al guardar"; saveResultsBtn.disabled = false; }
+      }
+    } else {
+      if (saveResultsBtn) {
+        const original = saveResultsBtn.textContent;
+        saveResultsBtn.textContent = "Inicia sesión para guardar";
+        setTimeout(()=>{ saveResultsBtn.textContent = original; }, 1800);
+      }
+    }
+  });
+
+  // Buttons in results
+  safeOn(document.getElementById("viewTipsBtn"), "click", () => showTab("tips"));
+  safeOn(document.getElementById("viewChallengesBtn"), "click", () => showTab("challenges"));
+  safeOn(document.getElementById("saveResultsBtn"), "click", () => {/* handled on calculate */});
+
+  // Contact modal (guarded)
+  const contactModal = document.getElementById("contactModal");
+  safeOn(document.getElementById("closeContactModal"), "click", () => { if (contactModal) contactModal.classList.add("hidden"); });
+  if (contactModal) contactModal.addEventListener("click", (e) => { if (e.target === contactModal) contactModal.classList.add("hidden"); });
+  safeOn(document.getElementById("copyEmailBtn"), "click", () => { navigator.clipboard.writeText("powergreen_app@gmail.com"); });
+
+  // Hide everything except auth until auth state is known
+  if (header) header.style.display = "none";
+  if (footer) footer.style.display = "none";
+  tabContents.forEach((tab) => tab.classList.remove("active"));
 });
 
-
-        // Inicialmente ocultar todo excepto auth
-        mainContent.style.display = "none";
-        header.style.display = "none";
-        footer.style.display = "none";
-        welcomeSection.classList.add("hidden");
-
-        // Maneja el clic en "Acerca de"
-        aboutLink.addEventListener("click", function (e) {
-          e.preventDefault();
-
-          // Oculta todas las pestañas
-          tabContents.forEach((tab) => {
-            tab.classList.remove("active");
-          });
-
-          // Muestra solo la sección Welcome
-          welcomeSection.classList.remove("hidden");
-
-          // Desmarca cualquier botón de pestaña activo
-          tabButtons.forEach((button) => {
-            button.classList.remove("text-white", "font-bold");
-            button.classList.add("text-gray-200");
-          });
-        });
-
-        // Login
-        document
-          .getElementById("loginBtn")
-          .addEventListener("click", async () => {
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-
-            try {
-              await window.firebaseAuth.signInWithEmailAndPassword(
-                email,
-                password
-              );
-              authMessage.textContent = "Inicio de sesión exitoso!";
-              authMessage.className = "mt-4 text-center text-green-500";
-              authMessage.classList.remove("hidden");
-            } catch (error) {
-              let message = "Error al iniciar sesión";
-              if (error.code === "auth/invalid-email")
-                message = "Email inválido";
-              if (error.code === "auth/user-not-found")
-                message = "Usuario no encontrado";
-              if (error.code === "auth/wrong-password")
-                message = "Contraseña incorrecta";
-
-              authMessage.textContent = message;
-              authMessage.className = "mt-4 text-center text-red-500";
-              authMessage.classList.remove("hidden");
-            }
-          });
-
-        // Logout
-        document
-          .getElementById("logoutBtn")
-          .addEventListener("click", async () => {
-            try {
-              await window.firebaseAuth.signOut();
-            } catch (error) {
-              console.error("Error al cerrar sesión:", error);
-            }
-            // Oculta todas las pestañas
-            tabContents.forEach((tab) => {
-              tab.classList.remove("active");
-            });
-          });
-
-        // Registro
-        document
-          .getElementById("registerBtn")
-          .addEventListener("click", async () => {
-            //const name = document.getElementById('registerName').value;
-            const email = document.getElementById("registerEmail").value;
-            const password = document.getElementById("registerPassword").value;
-            const authMessage = document.getElementById("authMessage");
-
-            if (password.length < 6) {
-              authMessage.textContent =
-                "La contraseña debe tener al menos 6 caracteres";
-              authMessage.className = "mt-4 text-center text-red-500";
-              authMessage.classList.remove("hidden");
-              return;
-            }
-
-            try {
-              await window.firebaseAuth.createUserWithEmailAndPassword(
-                email,
-                password
-              );
-              authMessage.textContent = "Registro exitoso!";
-              authMessage.className = "mt-4 text-center text-green-500";
-              authMessage.classList.remove("hidden");
-
-              // Mostrar formulario de login después de registro
-              document.getElementById("registerForm").classList.add("hidden");
-              document.getElementById("loginForm").classList.remove("hidden");
-            } catch (error) {
-              let message = "Error al registrarse";
-              if (error.code === "auth/email-already-in-use")
-                message = "El email ya está en uso";
-              if (error.code === "auth/invalid-email")
-                message = "Email inválido";
-              if (error.code === "auth/weak-password")
-                message = "Contraseña débil";
-
-              authMessage.textContent = message;
-              authMessage.className = "mt-4 text-center text-red-500";
-              authMessage.classList.remove("hidden");
-            }
-          });
-
-        // Alternar entre login y registro
-        document
-          .getElementById("showRegister")
-          .addEventListener("click", () => {
-            document.getElementById("loginForm").classList.add("hidden");
-            document.getElementById("registerForm").classList.remove("hidden");
-            document.getElementById("authMessage").classList.add("hidden");
-          });
-
-        document.getElementById("showLogin").addEventListener("click", () => {
-          document.getElementById("registerForm").classList.add("hidden");
-          document.getElementById("loginForm").classList.remove("hidden");
-          document.getElementById("authMessage").classList.add("hidden");
-        });
-        // Valores de entrada de rango
-        const driveDistance = document.getElementById("driveDistance");
-        const drivingValue = document.getElementById("drivingValue");
-        const flightsPerYear = document.getElementById("flightsPerYear");
-        const flightsValue = document.getElementById("flightsValue");
-        const electricityUsage = document.getElementById("electricityUsage");
-        const electricityValue = document.getElementById("electricityValue");
-
-        // Filtrado de consejos
-        const tipFilters = document.querySelectorAll(".tip-filter");
-        const tipCards = document.querySelectorAll(".tip-card");
-
-        // Botones de navegación de resultados
-        const viewTipsBtn = document.getElementById("viewTipsBtn");
-        const viewChallengesBtn = document.getElementById("viewChallengesBtn");
-        const saveResultsBtn = document.getElementById("saveResultsBtn");
-
-        // Botones de retos
-        const joinChallengeButtons = document.querySelectorAll(
-          ".join-challenge-btn"
-        );
-
-        // Alternar menú móvil
-        menuToggle.addEventListener("click", function () {
-          mobileMenu.classList.toggle("hidden");
-        });
-
-        // Navegación por pestañas
-        function showTab(tabId) {
-          welcomeSection.classList.add("hidden");
-          tabContents.forEach((tab) => {
-            tab.classList.remove("active");
-          });
-          tabButtons.forEach((button) => {
-            button.classList.remove("text-white", "font-bold");
-            button.classList.add("text-gray-200");
-          });
-
-          const targetTab = document.getElementById(tabId);
-          const targetButton = document.querySelector(`[data-tab="${tabId}"]`);
-
-          if (targetTab) {
-            targetTab.classList.add("active");
-            // Ocultar sección de bienvenida cuando se muestra cualquier pestaña
-            welcomeSection.classList.add("hidden");
-          }
-
-          if (targetButton) {
-            targetButton.classList.add("text-white", "font-bold");
-            targetButton.classList.remove("text-gray-200");
-          }
-
-          // Cerrar menú móvil después de seleccionar en móvil
-          if (window.innerWidth < 768) {
-            mobileMenu.classList.add("hidden");
-          }
-        }
-
-        tabButtons.forEach((button) => {
-          button.addEventListener("click", function () {
-            const tabId = this.getAttribute("data-tab");
-            showTab(tabId);
-          });
-        });
-
-        // Botón Comenzar
-        getStartedBtn.addEventListener("click", function () {
-          welcomeSection.classList.add("hidden");
-          showTab("calculator");
-        });
-
-        // Mostrar valores de controles deslizantes
-        driveDistance.addEventListener("input", function () {
-          drivingValue.textContent = `${this.value} km`;
-        });
-
-        flightsPerYear.addEventListener("input", function () {
-          flightsValue.textContent = `${this.value} vuelos`;
-        });
-
-        electricityUsage.addEventListener("input", function () {
-          electricityValue.textContent = `${this.value} kWh`;
-        });
-
-        // Filtrar consejos
-        tipFilters.forEach((filter) => {
-          filter.addEventListener("click", function () {
-            const category = this.getAttribute("data-category");
-
-            // Actualizar botón de filtro activo
-            tipFilters.forEach((btn) => {
-              btn.classList.remove("active", "bg-primary", "text-white");
-              btn.classList.add(
-                "bg-gray-200",
-                "dark:bg-gray-700",
-                "text-gray-800",
-                "dark:text-white"
-              );
-            });
-            this.classList.add("active", "bg-primary", "text-white");
-            this.classList.remove(
-              "bg-gray-200",
-              "dark:bg-gray-700",
-              "text-gray-800",
-              "dark:text-white"
-            );
-
-            // Filtrar tarjetas de consejos
-            tipCards.forEach((card) => {
-              if (
-                category === "all" ||
-                card.getAttribute("data-category") === category
-              ) {
-                card.style.display = "block";
-              } else {
-                card.style.display = "none";
-              }
-            });
-          });
-        });
-
-        // Calcular huella de carbono
-        calculateBtn.addEventListener("click", async function () {
-          // Algoritmo simple de cálculo para demostración
-          const driving = parseInt(driveDistance.value) * 0.0002; // toneladas CO2 por km
-          const flights = parseInt(flightsPerYear.value) * 0.5; // toneladas CO2 por vuelo (promedio)
-          const publicTransport =
-            0.2 -
-            parseInt(document.getElementById("publicTransport").value) * 0.05; // basado en frecuencia de uso
-          const electricity = parseInt(electricityUsage.value) * 0.0005; // toneladas CO2 por kWh
-          const renewableEnergy =
-            parseInt(document.getElementById("renewableEnergy").value) * 0.3; // reducción basada en uso de renovables
-          const dietImpact =
-            parseInt(document.getElementById("dietType").value) * 0.5; // basado en tipo de dieta
-          const clothingImpact =
-            parseInt(document.getElementById("clothingHabits").value) * 0.2;
-          const electronicsImpact =
-            parseInt(document.getElementById("electronicsHabits").value) * 0.3;
-          const recyclingImpact =
-            0.5 -
-            parseInt(document.getElementById("recyclingHabits").value) * 0.15; // basado en hábitos de reciclaje
-
-          // Calcular total y redondear a 1 decimal
-          const transportTotal = driving + flights + publicTransport;
-          const energyTotal = electricity - renewableEnergy;
-          const foodTotal = dietImpact;
-          const consumptionTotal = clothingImpact + electronicsImpact;
-          const wasteTotal = recyclingImpact;
-
-          const total =
-            Math.round(
-              (transportTotal +
-                energyTotal +
-                foodTotal +
-                consumptionTotal +
-                wasteTotal) *
-                10
-            ) / 10;
-
-          // Mostrar resultados
-          document.getElementById("totalCarbonFootprint").textContent = total;
-          resultsSection.classList.remove("hidden");
-
-          // Crear o actualizar gráfico
-          createFootprintChart([
-            transportTotal,
-            energyTotal,
-            foodTotal,
-            clothingImpact,
-            electronicsImpact,
-            wasteTotal,
-          ]);
-
-          // Generar áreas de mejora
-          generateImprovementAreas({
-            transport: transportTotal,
-            energy: energyTotal,
-            food: foodTotal,
-            consumption: consumptionTotal,
-            waste: wasteTotal,
-          });
-
-          // Desplazarse a resultados
-          resultsSection.scrollIntoView({ behavior: "smooth" });
-
-          // Guardar datos para seguimiento de progreso
-          saveFootprintData(total);
-          updateProgressChart();
-          // Guardar resultados en Firestore (solo si el usuario está autenticado)
-          const user = window.firebaseAuth.auth.currentUser;
-          if (user) {
-            const footprintData = {
-              total: total,
-              categories: {
-                transport: transportTotal,
-                energy: energyTotal,
-                food: foodTotal,
-                clothing: clothingImpact,
-                electronics: electronicsImpact,
-                waste: wasteTotal,
-              },
-              details: {
-                driving: parseInt(driveDistance.value),
-                flights: parseInt(flightsPerYear.value),
-                publicTransport:
-                  document.getElementById("publicTransport").value,
-                electricity: parseInt(electricityUsage.value),
-                renewableEnergy:
-                  document.getElementById("renewableEnergy").value,
-                dietType: document.getElementById("dietType").value,
-                clothingHabits: document.getElementById("clothingHabits").value,
-                electronicsHabits:
-                  document.getElementById("electronicsHabits").value,
-                recyclingHabits:
-                  document.getElementById("recyclingHabits").value,
-              },
-              date: new Date().toISOString().split("T")[0], // Fecha en formato YYYY-MM-DD
-              timestamp: new Date(),
-            };
-
-            // Marca la encuesta inicial como completada (1 sola vez)
-            try {
-              const answersPayload = footprintData?.inputs || null; // si querés guardar respuestas bases
-              await setInitialSurveyDone(user.uid, answersPayload);
-            } catch (e) {
-              console.warn("No se pudo marcar initialSurvey:", e);
-            }
-
-
-            try {
-              // Mostrar estado de guardado
-              saveResultsBtn.innerHTML =
-                '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-              saveResultsBtn.disabled = true;
-
-              // Guardar en Firestore
-              const saved = await window.firebaseAuth.firestore.saveFootprint(
-                user.uid,
-                footprintData
-              );
-
-              if (saved) {
-                saveResultsBtn.textContent = "¡Resultados Guardados!";
-                setTimeout(() => {
-                  saveResultsBtn.textContent = "Guardar Resultados";
-                  saveResultsBtn.disabled = false;
-                }, 2000);
-              } else {
-                saveResultsBtn.textContent = "Error al guardar";
-                saveResultsBtn.disabled = false;
-              }
-            } catch (error) {
-              console.error("Error al guardar huella:", error);
-              saveResultsBtn.textContent = "Error al guardar";
-              saveResultsBtn.disabled = false;
-            }
-          } else {
-            saveResultsBtn.textContent = "Inicia sesión para guardar";
-            setTimeout(() => {
-              saveResultsBtn.textContent = "Guardar Resultados";
-            }, 2000);
-          }
-        });
-
-        // Creación de gráfico de huella
-        let footprintChart;
-        function createFootprintChart(data) {
-          const ctx = document
-            .getElementById("footprintChart")
-            .getContext("2d");
-
-          if (footprintChart) {
-            footprintChart.destroy();
-          }
-
-          footprintChart = new Chart(ctx, {
-            type: "doughnut",
-            data: {
-              labels: [
-                "Transporte",
-                "Energía en el Hogar",
-                "Alimentación",
-                "Ropa",
-                "Electrónicos",
-                "Residuos",
-              ],
-              datasets: [
-                {
-                  data: data,
-                  backgroundColor: [
-                    "#3498DB", // Azul - Transporte
-                    "#F1C40F", // Amarillo - Energía
-                    "#2ECC71", // Verde - Alimentación
-                    "#9B59B6", // Morado - Ropa
-                    "#FFA500", // Naranja - Electrónicos
-                    "#E74C3C", // Rojo - Residuos
-                  ],
-                  borderWidth: 1,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: "right",
-                  labels: {
-                    color: document.documentElement.classList.contains("dark")
-                      ? "#ECF0F1"
-                      : "#2C3E50",
-                  },
-                },
-              },
-            },
-          });
-        }
-
-        // Generar áreas de mejora basadas en resultados
-        function generateImprovementAreas(data) {
-          const improvementList = document.getElementById("improvementAreas");
-          improvementList.innerHTML = "";
-
-          // Ordenar categorías por impacto
-          const categories = Object.entries(data).sort((a, b) => b[1] - a[1]);
-
-          // Generar sugerencias para las 3 principales categorías
-          for (let i = 0; i < Math.min(3, categories.length); i++) {
-            const [category, impact] = categories[i];
-            const suggestion = getImprovementSuggestion(category);
-            const li = document.createElement("li");
-            li.className = "text-gray-700 dark:text-gray-300";
-            li.innerHTML = `<strong>${formatCategoryName(
-              category
-            )}:</strong> ${suggestion}`;
-            improvementList.appendChild(li);
-          }
-        }
-
-        // Formatear nombre de categoría para mostrar
-        function formatCategoryName(category) {
-          const names = {
-            transport: "Transporte",
-            energy: "Energía",
-            food: "Alimentación",
-            consumption: "Consumo",
-            waste: "Residuos",
-          };
-          return (
-            names[category] ||
-            category.charAt(0).toUpperCase() + category.slice(1)
-          );
-        }
-
-        // Obtener sugerencia de mejora basada en categoría
-        function getImprovementSuggestion(category) {
-          const suggestions = {
-            transport:
-              "Intenta usar más el transporte público o compartir coche para reducir emisiones.",
-            energy:
-              "Considera cambiar a electrodomésticos eficientes y iluminación LED.",
-            food: "Reducir el consumo de carne, especialmente carne roja, puede disminuir significativamente tu huella.",
-            consumption:
-              "Enfócate en comprar menos artículos de mayor calidad que duren más.",
-            waste:
-              "Mejora tus hábitos de reciclaje y considera compostar residuos orgánicos.",
-          };
-
-          return (
-            suggestions[category] ||
-            "Busca formas de reducir el consumo en esta área."
-          );
-        }
-
-        // Guardar datos de huella para seguimiento de progreso
-        function saveFootprintData(total) {
-          // En una aplicación real, esto usaría una base de datos o API
-          // Como no podemos usar localStorage, usaremos almacenamiento temporal en memoria
-          if (!window.footprintHistory) {
-            window.footprintHistory = [];
-          }
-
-          window.footprintHistory.push({
-            date: new Date(),
-            value: total,
-          });
-
-          // Si tenemos datos, ocultar el mensaje "sin datos"
-          if (window.footprintHistory.length > 0) {
-            document.getElementById("noProgressData").style.display = "none";
-          }
-        }
-
-        // Actualizar gráfico de progreso con datos históricos
-        async function updateProgressChart() {
-          const user = window.firebaseAuth.auth.currentUser;
-          if (!user) return;
-
-          try {
-            const history =
-              await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
-
-            if (history.length === 0) {
-              document.getElementById("noProgressData").style.display = "block";
-              return;
-            }
-
-            document.getElementById("noProgressData").style.display = "none";
-
-            // Preparar datos para la gráfica
-            const labels = history
-              .map((entry) => {
-                const date = new Date(entry.date);
-                return `${date.getDate()}/${date.getMonth() + 1}`; // Formato DD/MM
-              })
-              .reverse();
-
-            const values = history.map((entry) => entry.total).reverse();
-
-            // Crear o actualizar gráfico
-            const ctx = document
-              .getElementById("progressChart")
-              .getContext("2d");
-
-            if (window.progressChart) {
-              window.progressChart.destroy();
-            }
-
-            window.progressChart = new Chart(ctx, {
-              type: "line",
-              data: {
-                labels: labels,
-                datasets: [
-                  {
-                    label: "Huella de Carbono (toneladas CO₂e)",
-                    data: values,
-                    fill: false,
-                    borderColor: "#2ECC71",
-                    tension: 0.1,
-                  },
-                ],
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    title: {
-                      display: true,
-                      text: "Toneladas CO₂e",
-                      color: document.documentElement.classList.contains("dark")
-                        ? "#ECF0F1"
-                        : "#2C3E50",
-                    },
-                    ticks: {
-                      color: document.documentElement.classList.contains("dark")
-                        ? "#ECF0F1"
-                        : "#2C3E50",
-                    },
-                    grid: {
-                      color: document.documentElement.classList.contains("dark")
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(0, 0, 0, 0.1)",
-                    },
-                  },
-                  x: {
-                    ticks: {
-                      color: document.documentElement.classList.contains("dark")
-                        ? "#ECF0F1"
-                        : "#2C3E50",
-                    },
-                    grid: {
-                      color: document.documentElement.classList.contains("dark")
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(0, 0, 0, 0.1)",
-                    },
-                  },
-                },
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: document.documentElement.classList.contains("dark")
-                        ? "#ECF0F1"
-                        : "#2C3E50",
-                    },
-                  },
-                },
-              },
-            });
-          } catch (error) {
-            console.error("Error al cargar el historial:", error);
-          }
-        }
-
-        // Navegación de resultados
-        viewTipsBtn.addEventListener("click", function () {
-          showTab("tips");
-        });
-
-        viewChallengesBtn.addEventListener("click", function () {
-          showTab("challenges");
-        });
-
-        saveResultsBtn.addEventListener("click", function () {
-          // Ya guardado en la función de cálculo
-          // Solo mostrar confirmación
-          const saveBtn = document.getElementById("saveResultsBtn");
-          const originalText = saveBtn.textContent;
-          saveBtn.textContent = "¡Resultados Guardados!";
-          saveBtn.disabled = true;
-
-          setTimeout(() => {
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
-          }, 2000);
-        });
-
-        async function updateProgressStats() {
-          const user = window.firebaseAuth.auth.currentUser;
-          if (!user) return;
-
-          try {
-            const history =
-              await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
-
-            if (history.length > 0) {
-              // Calcular total ahorrado (comparando con el promedio)
-              const average = 10; // 10 toneladas promedio
-              const saved = history.reduce(
-                (acc, curr) => acc + (average - curr.total),
-                0
-              );
-
-              // Actualizar los contadores
-              document.querySelector(
-                "#progress .grid.grid-cols-1 div:nth-child(1) div"
-              ).textContent = Math.max(0, saved.toFixed(1));
-              document.querySelector(
-                "#progress .grid.grid-cols-1 div:nth-child(2) div"
-              ).textContent = document.getElementById(
-                "activeChallengesTodo"
-              ).children.length;
-              document.querySelector(
-                "#progress .grid.grid-cols-1 div:nth-child(3) div"
-              ).textContent = history.length;
-            }
-          } catch (error) {
-            console.error("Error al actualizar estadísticas:", error);
-          }
-        }
-
-        // Funcionalidad para unirse a retos
-        joinChallengeButtons.forEach((button) => {
-          button.addEventListener("click", function () {
-            const challengeId = this.getAttribute("data-id");
-            const challengeCard = this.closest(".challenge-card");
-            const challengeTitle =
-              challengeCard.querySelector("h4").textContent;
-
-            // Agregar a retos activos
-            const activeChallengesTodo = document.getElementById(
-              "activeChallengesTodo"
-            );
-
-            // Si hay un mensaje "sin retos", limpiarlo
-            if (activeChallengesTodo.querySelector("p")) {
-              activeChallengesTodo.innerHTML = "";
-            }
-
-            // Crear nuevo elemento de reto activo
-            const activeChallenge = document.createElement("div");
-            activeChallenge.className =
-              "bg-white dark:bg-gray-700 rounded-lg shadow-md p-4 fade-in";
-            activeChallenge.setAttribute("data-id", challengeId);
-
-            // Agregar contenido del reto
-            activeChallenge.innerHTML = `
-                        <div class="flex justify-between items-center mb-3">
-                            <h4 class="font-semibold">${challengeTitle}</h4>
-                            <span class="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 px-2 py-1 rounded-full text-xs">En Progreso</span>
-                        </div>
-                        <div class="mb-3">
-                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-                                <div class="bg-primary h-2.5 rounded-full progress-bar" style="width: 0%"></div>
-                            </div>
-                            <div class="flex justify-between text-xs mt-1">
-                                <span>0%</span>
-                                <span>Progreso</span>
-                                <span>100%</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between">
-                            <button class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded transition-colors duration-300 abandon-btn">
-                                Abandonar
-                            </button>
-                            <button class="bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded transition-colors duration-300 progress-btn">
-                                Actualizar Progreso
-                            </button>
-                        </div>
-                    `;
-
-            activeChallengesTodo.appendChild(activeChallenge);
-
-            // Deshabilitar botón de unirse en la tarjeta de reto
-            this.textContent = "Unido";
-            this.disabled = true;
-            this.classList.add("bg-gray-500");
-            this.classList.remove("bg-primary", "hover:bg-secondary");
-
-            // Agregar event listeners a los nuevos botones
-            activeChallenge
-              .querySelector(".abandon-btn")
-              .addEventListener("click", function () {
-                // Eliminar de retos activos
-                activeChallenge.remove();
-
-                // Rehabilitar botón de unirse
-                const joinButton = document.querySelector(
-                  `.join-challenge-btn[data-id="${challengeId}"]`
-                );
-                if (joinButton) {
-                  joinButton.textContent = "Unirse al Reto";
-                  joinButton.disabled = false;
-                  joinButton.classList.remove("bg-gray-500");
-                  joinButton.classList.add("bg-primary", "hover:bg-secondary");
-                }
-
-                // Si no hay retos activos, mostrar mensaje "sin retos"
-                if (activeChallengesTodo.children.length === 0) {
-                  activeChallengesTodo.innerHTML =
-                    '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Aún no te has unido a ningún reto.</p>';
-                }
-              });
-
-            activeChallenge
-              .querySelector(".progress-btn")
-              .addEventListener("click", function () {
-                // Simular actualización de progreso
-                const progressBar =
-                  activeChallenge.querySelector(".progress-bar");
-                const currentWidth = parseInt(progressBar.style.width) || 0;
-                const newWidth = Math.min(currentWidth + 20, 100);
-                progressBar.style.width = `${newWidth}%`;
-
-                // Si se completó, mover a retos completados
-                if (newWidth >= 100) {
-                  // Mover a historial de retos
-                  const challengeHistory =
-                    document.getElementById("challengeHistory");
-
-                  // Si hay un mensaje "sin retos completados", limpiarlo
-                  if (challengeHistory.querySelector("p")) {
-                    challengeHistory.innerHTML = "";
-                  }
-
-                  // Crear elemento de reto completado
-                  const completedChallenge = document.createElement("div");
-                  completedChallenge.className =
-                    "bg-white dark:bg-gray-700 rounded-lg shadow-md p-4 fade-in";
-                  completedChallenge.innerHTML = `
-                                <div class="flex justify-between items-center">
-                                    <h4 class="font-semibold">${challengeTitle}</h4>
-                                    <span class="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 px-2 py-1 rounded-full text-xs">Completado</span>
-                                </div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Completado el ${new Date().toLocaleDateString()}</p>
-                            `;
-
-                  challengeHistory.appendChild(completedChallenge);
-
-                  // Eliminar de retos activos
-                  activeChallenge.remove();
-
-                  // Si no hay retos activos, mostrar mensaje "sin retos"
-                  if (activeChallengesTodo.children.length === 0) {
-                    activeChallengesTodo.innerHTML =
-                      '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Aún no te has unido a ningún reto.</p>';
-                  }
-                }
-              });
-          });
-        });
-
-        // Inicializar mostrando primero la sección de bienvenida
-        tabContents.forEach((tab) => {
-          tab.classList.remove("active");
-        });
-
-        // Inicializar gráfico de progreso si existen datos
-        updateProgressChart();
-        updateProgressStats();
-        // Contact Modal functionality
-        const contactModal = document.getElementById("contactModal");
-        const contactLink = document.getElementById("contactLink");
-        const closeContactModal = document.getElementById("closeContactModal");
-        const copyEmailBtn = document.getElementById("copyEmailBtn");
-
-        if (contactLink) {
-          contactLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (contactModal) contactModal.classList.remove("hidden");
-          });
-        }
-
-        if (closeContactModal) {
-          closeContactModal.addEventListener("click", () => {
-            if (contactModal) contactModal.classList.add("hidden");
-          });
-        }
-
-        if (copyEmailBtn) {
-          copyEmailBtn.addEventListener("click", () => {
-            navigator.clipboard.writeText("powergreen_app@gmail.com");
-            copyEmailBtn.textContent = "¡Copiado!";
-            setTimeout(() => {
-              copyEmailBtn.textContent = "Copiar Email";
-            }, 2000);
-          });
-        }
-
-        // Cerrar modal al hacer click fuera del contenido
-        if (contactModal) {
-          contactModal.addEventListener("click", (e) => {
-            if (e.target === contactModal) {
-              contactModal.classList.add("hidden");
-            }
-          });
-        }
-        // Al final de tu event listener DOMContentLoaded, añade:
-        document
-          .getElementById("testFirestoreBtn")
-          .addEventListener("click", async () => {
-            const result = await window.firebaseAuth.firestore.testConnection();
-            if (result) {
-              alert(
-                "¡Conexión con Firestore exitosa! Revisa tu base de datos en Firebase Console."
-              );
-            } else {
-              alert(
-                "Error al conectar con Firestore. Revisa la consola para más detalles."
-              );
-            }
-          });
-      });
-    </script>
+</script>
 
     <script>
   // ... (tus variables ya existentes)
@@ -2919,33 +2506,80 @@ waitForFirebaseReady().then(function () {
 
     // --- Progreso: sobreescribir de forma segura para que no llame window.progressChart ---
     window.updateProgressChart = async function(){
-      var user = window.firebaseAuth && window.firebaseAuth.auth && window.firebaseAuth.auth.currentUser;
-      if (!user) return;
-      try {
-        var history = await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
-        console.log("[Progreso] Historial:", history);
+  var user = window.firebaseAuth && window.firebaseAuth.auth && window.firebaseAuth.auth.currentUser;
+  if (!user) return;
+  try {
+    var history = await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
 
-        var labels = history.map(function(h){ return h.date; });
-        var values = history.map(function(h){ return Number(h.total || (h.totals && h.totals.co2e) || 0); });
-
-        var noDataEl = document.getElementById("noProgressData");
-        if (noDataEl) noDataEl.style.display = values.length ? "none" : "block";
-
-        var c = document.getElementById("progressChart");
-        if (!c || !c.getContext) return;
-        var ctx = c.getContext("2d");
-        if (window.pgProgressChart && typeof window.pgProgressChart.destroy === "function") {
-          window.pgProgressChart.destroy();
-        }
-        window.pgProgressChart = new Chart(ctx, {
-          type: "line",
-          data: { labels: labels, datasets: [{ label: "CO₂e diario", data: values, tension: 0.25 }] },
-          options: { responsive: true, maintainAspectRatio: false }
-        });
-      } catch(e){
-        console.error("Error en updateProgressChart:", e);
+    // Map to entries with a valid Date and total
+    function parseDateSafe(h){
+      if (h.date) { try { return new Date(h.date + "T00:00:00"); } catch(e){} }
+      if (h.timestamp && typeof h.timestamp === "object") {
+        if (typeof h.timestamp.seconds === "number") return new Date(h.timestamp.seconds * 1000);
+        try { return new Date(h.timestamp); } catch(e){}
       }
-    };
+      return null;
+    }
+
+    var items = history.map(function(h){
+      var d = parseDateSafe(h);
+      var total = Number(h.total || (h.totals && h.totals.co2e) || 0) || 0;
+      return { raw: h, date: d, total: total };
+    }).filter(function(it){ return it.date && !isNaN(it.date.getTime()); });
+
+    // Sort: older on the left, newest (ideally 'hoy') on the right
+    items.sort(function(a, b){ return a.date - b.date; });
+
+    // Labels relative to today: 'hoy', 'ayer', 'hace N días'
+    var now = new Date();
+    var today = new Date(now.toISOString().slice(0,10) + "T00:00:00");
+    function labelFor(d){
+      var d0 = new Date(d.toISOString().slice(0,10) + "T00:00:00");
+      var diff = Math.round((today - d0) / 86400000);
+      if (diff <= 0) return "hoy";
+      if (diff === 1) return "ayer";
+      if (diff === 2) return "hace 2 días";
+      return "hace " + diff + " días";
+    }
+    var labels = items.map(function(it){ return labelFor(it.date); });
+    var values = items.map(function(it){ return Number(it.total || 0); });
+
+    var noDataEl = document.getElementById("noProgressData");
+    if (noDataEl) noDataEl.style.display = values.length ? "none" : "block";
+
+    var c = document.getElementById("progressChart");
+    if (!c || !c.getContext) return;
+    var ctx = c.getContext("2d");
+    if (window.pgProgressChart && typeof window.pgProgressChart.destroy === "function") {
+      window.pgProgressChart.destroy();
+    }
+    window.pgProgressChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "CO₂e diario",
+          data: values,
+          tension: 0.3,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { autoSkip: true, maxRotation: 0 }, grid: { display: false } },
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  } catch(e){
+    console.error("Error en updateProgressChart:", e);
+  }
+};
 
     // Hook adicional al login para cargar hoy + progreso (sin tocar tu onAuthStateChanged original)
     try {
@@ -3003,6 +2637,540 @@ waitForFirebaseReady().then(function () {
 </script>
 
 <!-- === /PG minimal patch === -->
+
+
+<!-- === PG Daily override (stitch-styled) === -->
+<script>
+(function(){
+  // Ensure toast container exists
+  function ensureToast() {
+    var toast = document.getElementById('dailyToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'dailyToast';
+      toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 transform bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 hidden';
+      toast.textContent = '¡Añadido con éxito!';
+      document.body.appendChild(toast);
+    }
+    return toast;
+  }
+  function showToast(msg) {
+    var t = ensureToast();
+    t.textContent = msg || '¡Añadido con éxito!';
+    t.classList.remove('hidden');
+    setTimeout(function(){ t.classList.add('hidden'); }, 1500);
+  }
+
+  // Map icons for Material Symbols
+  var ICONS = {
+    transporte: 'directions_car',
+    energia: 'bolt',
+    alimentacion: 'restaurant',
+    ropa: 'checkroom',
+    electronica: 'devices',
+    residuos: 'delete'
+  };
+
+  // Enrich existing CATEGORIES with Material icon names (non-breaking)
+  if (window.CATEGORIES && Array.isArray(window.CATEGORIES)) {
+    window.CATEGORIES.forEach(function(c){
+      if (!c.mi) c.mi = ICONS[c.id] || 'eco';
+    });
+  } else {
+    // minimal fallback
+    window.CATEGORIES = [
+      { id: 'transporte',  label: 'Transporte',   unit: 'km',      factor: 0.121, mi: ICONS['transporte'],  hint: 'Auto, moto o similar' },
+      { id: 'energia',     label: 'Energía',      unit: 'kWh',     factor: 0.233, mi: ICONS['energia'],     hint: 'Consumo eléctrico' },
+      { id: 'alimentacion',label: 'Alimentación', unit: 'comidas', factor: 2.50,  mi: ICONS['alimentacion'],hint: 'Estimación por comida' },
+      { id: 'ropa',        label: 'Ropa',         unit: 'prendas', factor: 6.50,  mi: ICONS['ropa'],        hint: 'Compra/uso eventual' },
+      { id: 'electronica', label: 'Electrónica',  unit: 'h uso',   factor: 0.05,  mi: ICONS['electronica'], hint: 'Uso dispositivos' },
+      { id: 'residuos',    label: 'Residuos',     unit: 'kg',      factor: 0.45,  mi: ICONS['residuos'],    hint: 'Desechos generados' },
+    ];
+  }
+
+  // Override renderDailyCards with stitch-like UI (inputs inline)
+  window.renderDailyCards = function renderDailyCards() {
+    var dailyCarousel = document.getElementById('dailyCarousel');
+    if (!dailyCarousel) return;
+
+    dailyCarousel.innerHTML = '';
+    var user = window.firebaseAuth && window.firebaseAuth.auth && window.firebaseAuth.auth.currentUser;
+
+    (window.CATEGORIES || []).forEach(function(cat){
+      var card = document.createElement('div');
+      card.className = 'pg-card bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm';
+      card.innerHTML = [
+        '<div class=\"flex h-full flex-col justify-between\">',
+          '<div>',
+            '<div class=\"mb-4 flex items-center gap-4\">',
+              '<div class=\"flex size-12 items-center justify-center rounded-xl bg-[var(--surface-light)] dark:bg-gray-800 text-primary\">',
+                '<span class=\"material-symbols-outlined text-3xl\">', (cat.mi || 'eco'), '</span>',
+              '</div>',
+              '<div>',
+                '<h3 class=\"text-lg font-bold text-ink dark:text-white\">', (cat.label || ''), '</h3>',
+                '<p class=\"text-sm text-gray-500\">', (cat.hint || ''), '</p>',
+              '</div>',
+            '</div>',
+            '<div class=\"relative mt-6\">',
+              '<input type=\"number\" min=\"0\" step=\"0.01\" class=\"w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 p-4 text-center text-2xl font-bold focus:border-primary focus:ring-primary\" placeholder=\"0\" />',
+              '<span class=\"absolute right-4 top-1/2 -translate-y-1/2 text-lg text-gray-500\">', (cat.unit || ''), '</span>',
+            '</div>',
+          '</div>',
+          '<button class=\"mt-6 w-full rounded-xl bg-primary hover:bg-secondary text-white py-3 font-semibold transition-colors\">Añadir</button>',
+        '</div>'
+      ].join('');
+
+      // Wire up add button
+      var btn = card.querySelector('button');
+      var input = card.querySelector('input');
+      btn.addEventListener('click', function(){
+        var val = Number(input.value);
+        if (isNaN(val) || val < 0) { input.focus(); return; }
+        var user = window.firebaseAuth && window.firebaseAuth.auth && window.firebaseAuth.auth.currentUser;
+        if (!user) { alert('Inicia sesión primero'); return; }
+        btn.disabled = true; var original = btn.textContent; btn.textContent = 'Guardando…';
+        window.saveDaily(user.uid, cat.id, val).then(function(){
+          showToast('+' + (val) + ' ' + (cat.unit||'') + ' en ' + (cat.label||''));
+          input.value = '';
+        }).catch(function(e){
+          console.error(e); alert('No se pudo guardar');
+        }).finally(function(){
+          btn.disabled = false; btn.textContent = original;
+        });
+      });
+
+      dailyCarousel.appendChild(card);
+    });
+  };
+
+  // Add floating QR button (visual only; no-op)
+  function ensureQR() {
+    if (document.getElementById('pgQR')) return;
+    var fab = document.createElement('button');
+    fab.id = 'pgQR';
+    fab.className = 'fixed bottom-24 right-6 z-40 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-black dark:text-white shadow-lg hover:scale-105 transition-transform';
+    fab.innerHTML = '<span class="material-symbols-outlined text-3xl">qr_code_scanner</span>';
+    fab.title = 'Escanear QR (próximamente)';
+    document.body.appendChild(fab);
+  }
+
+  // Ensure initial UI bits after DOM
+  document.addEventListener('DOMContentLoaded', function(){
+    ensureToast();
+    ensureQR();
+    // If user already logged, render now; otherwise original onAuthStateChanged will call it
+    if (typeof window.renderDailyCards === 'function') {
+      try { window.renderDailyCards(); } catch(e){}
+    }
+  });
+})();
+</script>
+<!-- === /PG Daily override === -->
+
+
+<style>
+:root {
+  --primary-color: #254D32;
+  --secondary-color: #6B7F5B;
+  --accent-color: #A3B18A;
+  --text-primary: #1F3D2B;
+  --text-secondary: #4B5563;
+  --surface: #F8EBCF;
+}
+.dark {
+  --primary-color: #A3B18A;
+  --secondary-color: #6B7F5B;
+  --accent-color: #254D32;
+  --text-primary: #F8EBCF;
+  --text-secondary: #9CA3AF;
+  --surface: #111827;
+}
+body { padding-bottom: 5.25rem; }
+#bottomNav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; }
+#recalcBtn, #quickAddBtn { background-color: var(--primary-color) !important; color: #fff !important; }
+#progress .bg-\[var\(--secondary-color\,#1a4d2e\)\]\/10 { background-color: #ffffff !important; }
+.dark #progress .bg-\[var\(--secondary-color\,#1a4d2e\)\]\/10 { background-color: #111827 !important; }
+
+/* Improve contrast for progress KPI cards */
+#progress .bg-[var(--secondary-color,#1a4d2e)]\/10 { 
+  background-color: #ffffff !important; 
+  border: 1px solid rgba(0,0,0,.06) !important;
+}
+.dark #progress .bg-[var(--secondary-color,#1a4d2e)]\/10 { 
+  background-color: #111827 !important; 
+  border: 1px solid rgba(255,255,255,.08) !important;
+}
+
+#bottomNav .material-symbols-outlined { font-variation-settings: 'OPSZ' 20; }
+main.container { padding-bottom: 1rem; }
+</style>
+
+
+<script>
+(function(){
+  const $ = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+  function waitForFirebaseReady(timeoutMs){
+    timeoutMs = timeoutMs || 8000;
+    return new Promise((resolve, reject) => {
+      const t0 = Date.now();
+      (function check(){
+        const ok = window.firebaseAuth && window.firebaseAuth.firestore && window.firebaseAuth.firestore.api;
+        if (ok) return resolve(window.firebaseAuth.firestore);
+        if (Date.now() - t0 > timeoutMs) return reject(new Error("Firebase no inicializó (enh)"));
+        setTimeout(check, 40);
+      })();
+    });
+  }
+  async function pickHomeTip(){
+    try {
+      const user = window.firebaseAuth?.auth?.currentUser;
+      if (!user) return;
+      const history = await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
+      if (!history.length) return;
+      const latest = history[0] || {};
+      const cats = latest.categories || latest?.totals?.byCategory || {};
+      const t = Number(cats.transport ?? cats.transporte ?? 0);
+      const e = Number(cats.energy ?? cats.energia ?? 0);
+      const f = Number(cats.food ?? cats.alimentacion ?? 0);
+      const c = Number(cats.consumption ?? 0) + Number(cats.clothing ?? cats.ropa ?? 0) + Number(cats.electronics ?? cats.electronica ?? 0);
+      const w = Number(cats.waste ?? cats.residuos ?? 0);
+      const arr = [["transport", t],["energy", e],["food", f],["consumption", c],["waste", w]].sort((a,b)=>b[1]-a[1]);
+      const topCat = arr[0][1] > 0 ? arr[0][0] : null;
+      if (!topCat) return;
+      const pool = $$('#tipsList .tip-card[data-category="'+topCat+'"]');
+      if (!pool.length) return;
+      const choice = pool[Math.floor(Math.random()*pool.length)];
+      let host = document.getElementById('homeSmartTip');
+      if (!host) {
+        const target = $('#home section:nth-of-type(4) .rounded-2xl');
+        if (target) { target.id = 'homeSmartTip'; host = target; }
+      }
+      if (!host) return;
+      host.className = 'flex flex-col items-start rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-sm';
+      host.innerHTML = ''
+        + '<div class="flex items-center justify-between w-full mb-2">'
+        +   '<div class="flex items-center gap-2">'
+        +     '<span class="material-symbols-outlined text-2xl text-[var(--accent-color)]">eco</span>'
+        +     '<span class="text-sm font-medium text-gray-500">Recomendado para tu mayor impacto</span>'
+        +   '</div>'
+        +   '<span class="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">'+ topCat +'</span>'
+        + '</div>'
+        + '<h4 class="text-lg font-semibold mb-1">'+ (choice.querySelector('h3')?.textContent || 'Consejo') +'</h4>'
+        + '<p class="text-sm text-gray-600 dark:text-gray-300">'+ (choice.querySelector('p')?.textContent || '') +'</p>';
+    } catch(e){ console.warn('SmartTip:', e); }
+  }
+  (function(){
+    const orig = window.pgLoadHomeDashboard;
+    window.pgLoadHomeDashboard = async function(){
+      try { if (orig) await orig(); } catch(e){}
+      try { await pickHomeTip(); } catch(e){}
+    };
+  })();
+  const BADGES = [
+    { id:'seed',  name:'Semilla',    threshold: 50,  icon:'eco' },
+    { id:'sprout',name:'Brote',      threshold: 150, icon:'local_florist' },
+    { id:'tree',  name:'Árbol',      threshold: 300, icon:'park' },
+    { id:'forest',name:'Bosque',     threshold: 600, icon:'forest' },
+  ];
+  async function getUserMeta(uid, api){
+    const { doc, getDoc } = api;
+    const ref = doc(window.firebaseAuth.firestore.db, 'users', uid, 'meta', 'profile');
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data() : { points: 0, badges: [] };
+  }
+  async function setUserMeta(uid, payload, api){
+    const { doc, setDoc } = api;
+    const ref = doc(window.firebaseAuth.firestore.db, 'users', uid, 'meta', 'profile');
+    await setDoc(ref, payload, { merge: true });
+  }
+  async function addUserPoints(uid, pts, api){
+    const meta = await getUserMeta(uid, api);
+    const newPts = Number(meta.points || 0) + Number(pts||0);
+    await setUserMeta(uid, { points: newPts }, api);
+    return newPts;
+  }
+  function renderBadges(points){
+    const host = $('#progress .flex.gap-3.p-1.flex-wrap');
+    if (!host) return;
+    host.innerHTML = '';
+    BADGES.forEach(b=>{
+      if (points >= b.threshold){
+        const chip = document.createElement('div');
+        chip.className = 'flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[var(--accent-color,#287a4a)]/20 pl-3 pr-4';
+        chip.innerHTML = '<span class="material-symbols-outlined text-[var(--primary-color)]">'+b.icon+'</span>'
+                       + '<p class="text-[var(--primary-color)] text-sm font-medium">'+b.name+'</p>';
+        host.appendChild(chip);
+      }
+    });
+  }
+  async function updatePointsAndBadges(){
+    try{
+      const user = window.firebaseAuth?.auth?.currentUser;
+      if (!user) return;
+      const api = window.firebaseAuth.firestore.api;
+      const meta = await getUserMeta(user.uid, api);
+      const points = Number(meta.points || 0);
+      const el = document.getElementById('pgPoints');
+      if (el) el.textContent = points;
+      renderBadges(points);
+    }catch(e){ console.warn('points/badges:', e); }
+  }
+  (function(){
+    const orig = window.pgRenderProgressScreen;
+    window.pgRenderProgressScreen = async function(){
+      try { if (typeof orig === 'function') await orig(); } catch(e){}
+      try { await updatePointsAndBadges(); } catch(e){}
+    };
+  })();
+const CHALLENGE_CATALOG = {
+    'meatless-week':      { id:'meatless-week', name:'Semana Sin Carne',      durationDays:7,  points:100, category:'food' },
+    'no-car-days':        { id:'no-car-days',   name:'Días Sin Auto',         durationDays:5,  points:120, category:'transport' },
+    'zero-waste-weekend': { id:'zero-waste-weekend', name:'Fin de Semana Cero Residuos', durationDays:2,  points:60,  category:'waste' },
+    'energy-saver-month': { id:'energy-saver-month', name:'Mes de Ahorro de Energía',    durationDays:30, points:300, category:'energy' },
+    'no-new-stuff-month': { id:'no-new-stuff-month', name:'Mes Sin Compras Nuevas',      durationDays:30, points:240, category:'consumption' },
+    'water-saver':        { id:'water-saver', name:'Ahorrador de Agua',       durationDays:14, points:160, category:'energy' },
+  };
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function addDays(dateStr, n){
+    const d = new Date(dateStr+'T00:00:00');
+    d.setDate(d.getDate()+n);
+    return d.toISOString().slice(0,10);
+  }
+  async function joinChallenge(chId){
+    const user = window.firebaseAuth?.auth?.currentUser;
+    if (!user) { alert('Inicia sesión para unirte a un reto'); return; }
+    const api = window.firebaseAuth.firestore.api;
+    const db  = window.firebaseAuth.firestore.db;
+    const { doc, setDoc, getDoc } = api;
+    const def = CHALLENGE_CATALOG[chId];
+    if (!def) return;
+    const start = todayStr();
+    const ref = doc(db, 'users', user.uid, 'challenges', chId);
+    const snap = await getDoc(ref);
+    if (snap.exists() && snap.data()?.status === 'active') {
+      await renderActiveChallenges();
+      return;
+    }
+    const payload = {
+      id: def.id, name: def.name, durationDays: def.durationDays, points: def.points, category: def.category,
+      startDate: start, endDate: addDays(start, def.durationDays-1),
+      progressDays: 0, lastProgressDate: null, status: 'active', createdAt: new Date().toISOString()
+    };
+    await setDoc(ref, payload, { merge: true });
+    await renderActiveChallenges();
+  }
+  async function markChallengeDay(chId){
+    const user = window.firebaseAuth?.auth?.currentUser;
+    if (!user) return;
+    const api = window.firebaseAuth.firestore.api;
+    const db  = window.firebaseAuth.firestore.db;
+    const { doc, setDoc, getDoc } = api;
+    const ref = doc(db, 'users', user.uid, 'challenges', chId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const today = todayStr();
+    if (data.lastProgressDate === today) return; // 1 vez por día
+    let progressDays = Number(data.progressDays || 0) + 1;
+    let status = progressDays >= Number(data.durationDays) ? 'completed' : 'active';
+    const update = { progressDays, lastProgressDate: today, status };
+    if (status === 'completed' && !data.completedAt) update.completedAt = today;
+    await setDoc(ref, update, { merge: true });
+    if (status === 'completed') {
+      await addUserPoints(user.uid, Number(data.points || 0), api);
+    }
+    await renderActiveChallenges();
+    await updatePointsAndBadges();
+  }
+  function renderProgressBar(pct){
+    pct = Math.max(0, Math.min(100, pct));
+    return '<div class="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">'
+         +   '<div class="h-2 bg-[var(--primary-color)]" style="width:'+pct+'%"></div>'
+         + '</div>';
+  }
+  async function renderActiveChallenges(){
+    const host = document.getElementById('activeChallengesTodo');
+    if (!host) return;
+    const user = window.firebaseAuth?.auth?.currentUser;
+    if (!user) { host.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Inicia sesión para ver tus retos.</p>'; return; }
+    const api = window.firebaseAuth.firestore.api, db = window.firebaseAuth.firestore.db;
+    const { collection, getDocs } = api;
+    const qref = collection(db, 'users', user.uid, 'challenges');
+    const snaps = await getDocs(qref);
+    const items = [];
+    snaps.forEach((d)=> items.push(d.data()));
+    if (!items.length){
+      host.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Aún no te has unido a ningún reto.</p>';
+      return;
+    }
+    items.sort((a,b)=> (a.status==='active'?0:1) - (b.status==='active'?0:1));
+    host.innerHTML = items.map(it=>{
+      const pct = Math.round((Number(it.progressDays||0)/Number(it.durationDays||1))*100);
+      const statusPill = it.status==='completed' ? '<span class="ml-2 text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100">Completado</span>'
+                                                 : '<span class="ml-2 text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100">Activo</span>';
+      return ''
+        + '<div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4">'
+        +   '<div class="flex items-start justify-between">'
+        +     '<div>'
+        +       '<h4 class="font-semibold">'+(it.name||it.id)+'</h4>'
+        +       '<p class="text-xs text-gray-500">Inicio: '+(it.startDate||'—')+' · Fin: '+(it.endDate||'—')+statusPill+'</p>'
+        +     '</div>'
+        +     '<div class="text-right">'
+        +       '<p class="text-xs">Puntos: <strong>'+Number(it.points||0)+'</strong></p>'
+        +       '<p class="text-xs">Días: '+Number(it.progressDays||0)+'/'+Number(it.durationDays||0)+'</p>'
+        +     '</div>'
+        +   '</div>'
+        +   '<div class="mt-3">'+renderProgressBar(pct)+'</div>'
+        +   (it.status==='active'
+              ? '<button data-mark="'+it.id+'" class="mt-3 w-full rounded-md bg-primary text-white py-2 text-sm">Marcar día cumplido</button>'
+              : '<p class="mt-3 text-sm text-green-600">¡Reto completado! Puntos acreditados.</p>'
+            )
+        + '</div>';
+    }).join('');
+    $$('#activeChallengesTodo button[data-mark]').forEach(btn=>{
+      btn.addEventListener('click', ()=> markChallengeDay(btn.getAttribute('data-mark')));
+    });
+  }
+  function wireJoinButtons(){
+    $$('.join-challenge-btn[data-id]').forEach(btn=>{
+      btn.addEventListener('click', ()=> joinChallenge(btn.getAttribute('data-id')));
+    });
+  }
+  document.addEventListener('DOMContentLoaded', async function(){
+    wireJoinButtons();
+    try {
+      await waitForFirebaseReady();
+      window.firebaseAuth.onAuthStateChanged((u)=>{
+        if (u) { renderActiveChallenges(); updatePointsAndBadges(); }
+      });
+    } catch(e){ console.warn(e); }
+  });
+  window.pgChallenges = { joinChallenge, renderActiveChallenges, markChallengeDay };
+})();
+</script>
+
+<!-- === PG Section Loaders & Enhancements === -->
+<script>
+(function(){
+  const IDS = ["home","daily","progress","tips","challenges","calculator"];
+  const LOADER_HTML = '<div class="section-loader hidden"><div class="pg-spinner"></div></div>';
+  function ensureLoader(id){
+    const sec = document.getElementById(id);
+    if (!sec) return null;
+    sec.style.position = sec.style.position || 'relative';
+    let ov = sec.querySelector(':scope > .section-loader');
+    if (!ov) {
+      const div = document.createElement('div');
+      div.className = 'section-loader hidden';
+      div.innerHTML = '<div class="pg-spinner"></div>';
+      sec.appendChild(div);
+      ov = div;
+    }
+    return ov;
+  }
+  
+function showSectionLoader(id){
+  const sec = document.getElementById(id);
+  if (!sec) return;
+  let ov = sec.querySelector(':scope > .section-loader');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.className = 'section-loader absolute inset-0 bg-black/5 dark:bg-white/5 backdrop-blur-sm flex items-center justify-center z-20';
+    ov.innerHTML = '<div class="animate-spin rounded-full h-10 w-10 border-4 border-[var(--primary-color)] border-t-transparent"></div>';
+    sec.style.position = sec.style.position || 'relative';
+    sec.prepend(ov);
+  } else {
+    ov.classList.remove('hidden');
+  }
+  // Auto-hide safeguard after 4s
+  if (window._sectionLoaderTimers[id]) clearTimeout(window._sectionLoaderTimers[id]);
+  window._sectionLoaderTimers[id] = setTimeout(() => hideSectionLoader(id), 4000);
+}
+
+  
+function hideSectionLoader(id){
+  const sec = document.getElementById(id);
+  if (!sec) return;
+  if (window._sectionLoaderTimers && window._sectionLoaderTimers[id]) {
+    clearTimeout(window._sectionLoaderTimers[id]);
+    delete window._sectionLoaderTimers[id];
+  }
+  const ov = sec.querySelector(':scope > .section-loader');
+  if (ov) ov.classList.add('hidden');
+}
+
+  window.showSectionLoader = showSectionLoader;
+  window.hideSectionLoader = hideSectionLoader;
+
+  window._sectionLoaderTimers = {};
+  document.addEventListener('DOMContentLoaded', () => { IDS.forEach(ensureLoader); });
+
+  // Wrap existing loaders around async functions without altering their bodies
+  function wrapAsync(name, id){
+    const orig = window[name];
+    if (typeof orig !== 'function') return;
+    window[name] = async function(){
+      showSectionLoader(id);
+      try { return await orig.apply(this, arguments); }
+      finally { hideSectionLoader(id); }
+    };
+  }
+  // Wrap known functions
+  wrapAsync('pgLoadHomeDashboard', 'home');
+  wrapAsync('pgRenderProgressScreen', 'progress');
+  wrapAsync('updateProgressChart', 'progress');
+})();
+</script>
+
+
+<script>
+(function(){
+  function applyOvershootUI(){
+    const dailyEl = document.getElementById('pgDaily');
+    const goalEl  = document.getElementById('pgGoal');
+    if (!dailyEl || !goalEl) return;
+    const wrap = dailyEl.parentElement; // the <p> containing a/b
+    const daily = Number((dailyEl.textContent||'0').replace(/[^\d.]/g,''));
+    const goal  = Number((goalEl.textContent||'0').replace(/[^\d.]/g,''));
+    if (daily > goal) {
+      if (!wrap.dataset.orig) { wrap.dataset.orig = wrap.innerHTML; }
+      wrap.innerHTML = '<span class=\"text-red-600 font-semibold\">Te has pasado</span>';
+    } else {
+      if (wrap.dataset.orig) { wrap.innerHTML = wrap.dataset.orig; wrap.dataset.orig = ''; }
+    }
+  }
+  // Hook render
+  const orig = window.pgRenderProgressScreen;
+  window.pgRenderProgressScreen = async function(){
+    if (typeof orig === 'function') await orig();
+    applyOvershootUI();
+  };
+  document.addEventListener('DOMContentLoaded', applyOvershootUI);
+
+  // Observe changes to daily/goal to re-apply the UI if values change later
+  const dailyEl = document.getElementById('pgDaily');
+  const goalEl  = document.getElementById('pgGoal');
+  if (dailyEl && goalEl && window.MutationObserver) {
+    const obs = new MutationObserver(() => applyOvershootUI());
+    obs.observe(dailyEl, {subtree: true, characterData: true, childList: true});
+    obs.observe(goalEl,  {subtree: true, characterData: true, childList: true});
+  }
+
+})();
+</script>
+
+
+<script>
+(function(){
+  const origSaveDaily = window.saveDaily;
+  window.saveDaily = async function(uid, cat, value){
+    try { window.showSectionLoader && window.showSectionLoader('daily'); } catch(e){}
+    try { return await origSaveDaily.apply(this, arguments); }
+    finally { try { window.hideSectionLoader && window.hideSectionLoader('daily'); } catch(e){} }
+  };
+})();
+</script>
 
 </body>
 </html>
