@@ -66,7 +66,7 @@ npx cap sync android
 npx cap copy android
 ```
 
-### 6️⃣ Abrir Android Studio
+### Abrir Android Studio
 
 Desde la raíz del proyecto (donde está `package.json` y `capacitor.config.*`), ejecuta:
 
@@ -76,7 +76,7 @@ npx cap open android
 
 Esto abre la carpeta `android/` en Android Studio.
 
-### 7️⃣ Construir el APK (Debug) en Android Studio
+### Construir el APK (Debug) en Android Studio
 
 **En Android Studio:**
 - Menú **Build** → **Build Bundle(s) / APK(s)** → **Build APK(s)**
