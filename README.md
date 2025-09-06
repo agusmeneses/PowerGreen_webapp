@@ -2,23 +2,21 @@
 
 PowerGreen es una página web que nace con un propósito claro: que cada persona pueda conocer el impacto que deja en el planeta y, sobre todo, proveer las herramientas para reducirlo.
 
-## 📱 Tutorial: Clonar el repo y generar el APK con Capacitor (Android)
+## Tutorial: Clonar el repo y generar el APK con Capacitor (Android)
 
-### 🗺️ Resumen rápido de rutas
+### Resumen rápido de rutas
 
-- **Comandos git, npm/pnpm/yarn y npx cap**: Se ejecutan desde la carpeta raíz del proyecto web (donde está `package.json` y `capacitor.config.*`)
+- **Comandos git, npm y npx cap**: Se ejecutan desde la carpeta raíz del proyecto web (donde está `package.json` y `capacitor.config.*`)
 - **Comandos Gradle** (`./gradlew ...`): Se ejecutan dentro de `android/`
 
-### 0️⃣ Requisitos previos (una sola vez)
+### Requisitos previos (una sola vez)
 
 - **Node.js LTS** (18 o 20) y npm (o pnpm/yarn)
 - **Git**
 - **Java 17** (Temurin/Adoptium recomendado) → configura `JAVA_HOME`
 - **Android Studio** (SDKs, Platform Tools, AVD)
-- **Capacitor CLI** (v5+): se usa vía npx (no hace falta instalar global)
-- **Cuenta y proyecto en Firebase** con Auth y Base de datos (Firestore o Realtime Database), y su config
 
-### 1️⃣ Clonar el repositorio en tu PC
+### Clonar el repositorio en tu PC
 
 ```bash
 # 1. Elige una carpeta de trabajo
@@ -31,7 +29,7 @@ git clone https://github.com/tu-org/PowerGreen.git
 cd PowerGreen
 ```
 
-### 2️⃣ Instalar dependencias del proyecto web
+### Instalar dependencias del proyecto web
 
 ```bash
 # con npm
@@ -40,16 +38,7 @@ npm ci
 # (o npm install, o pnpm i, o yarn según uses)
 ```
 
-### 3️⃣ Configurar variables/entorno (Firebase)
-
-- Crea tu archivo de entorno si aplica (por ejemplo `.env`, `.env.production` o el que use tu build)
-- Coloca allí las claves de Firebase config (`apiKey`, `authDomain`, `projectId`, etc.)
-- Si el proyecto inyecta la config desde `capacitor.config.ts` o desde el código, asegúrate de que no queden vacías en producción
-- Verifica que Auth y la DB (Firestore/Realtime) estén habilitadas en Firebase
-
-> ⚠️ **Consejo**: Para apps empaquetadas con WebView (Capacitor), configura orígenes/permitidos y dominios de OAuth en Firebase si usas proveedores externos (Google, etc.)
-
-### 4️⃣ Compilar la app web (build)
+### Compilar la app web (build)
 
 Este paso genera los archivos estáticos (por ejemplo en `dist/` o `build/`) que Capacitor copiará dentro del proyecto nativo.
 
@@ -60,7 +49,7 @@ npm run build
 
 Asegúrate de que el resultado (ej.: `dist/`) coincida con lo configurado como `webDir` en `capacitor.config.ts/json`.
 
-### 5️⃣ Preparar Android con Capacitor
+### Preparar Android con Capacitor
 
 Si es la primera vez que agregas Android:
 
