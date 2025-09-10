@@ -498,6 +498,18 @@
           transform: rotate(360deg);
         }
       }
+
+    /* Ocultar flechas en Chrome, Safari, Edge */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ocultar flechas en Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
     </style>
   </head>
   <body class="bg-surface dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -544,7 +556,7 @@
             </h1>
             <button
               id="recalcBtn"
-              class="inline-flex items-center justify-center rounded-xl bg-[var(--primary-color)] py-2 px-3 text-xs font-bold text-black shadow-sm active:scale-95"
+              class="inline-flex items-center justify-center rounded-full bg-[var(--accent-light)] py-2 px-3 text-xs font-bold text-black shadow-sm active:scale-95"
             >
               <span class="material-symbols-outlined">calculate</span>
             </button>
@@ -643,10 +655,9 @@
           class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-8"
         >
           <div class="text-center mb-8">
-            <img
+            <img class="rounded-full shadow-md w-20 h-20 mx-auto mb-4"
               src="index.png"
               alt="PowerGreen Logo"
-              class="w-16 h-16 mx-auto mb-4"
             />
             <h2 class="text-3xl font-bold text-primary">
               Bienvenido a PowerGreen
@@ -3644,7 +3655,7 @@
               "</div>",
               "</div>",
               '<div class="relative mt-6">',
-              '<input type="number" min="0" step="0.01" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 p-4 text-center text-2xl font-bold focus:border-primary focus:ring-primary" placeholder="0" />',
+              '<input type="number" min="0" step="0.01" class="no-spinner w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 p-4 text-center text-2xl font-bold focus:border-primary focus:ring-primary" placeholder="0" />',
               '<span class="absolute right-4 top-1/2 -translate-y-1/2 text-lg text-gray-500">',
               cat.unit || "",
               "</span>",
@@ -3756,9 +3767,8 @@
         right: 0;
         z-index: 40;
       }
-      #recalcBtn,
       #quickAddBtn {
-        background-color: var(--primary-color) !important;
+        
         color: #fff !important;
       }
 
