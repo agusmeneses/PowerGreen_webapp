@@ -2271,6 +2271,10 @@
               breakdown.innerHTML = buildBreakdownCards(null);
               return;
             }
+
+            // Promedios globales (todos los días del usuario)
+            const averages = computeGlobalAverages(history);
+
             const latest = history[0];
             const prev = history[1] || null;
             const total = Number(latest?.totals?.co2e ?? latest.total ?? 0);
@@ -2304,13 +2308,64 @@
                 icon.textContent =
                   diff <= 0 ? "arrow_downward" : "arrow_upward";
             }
-            breakdown.innerHTML = buildBreakdownCards(latest);
+
+            // Cards: porcentaje del promedio global + listeners para abrir el detalle
+            breakdown.innerHTML = buildBreakdownCards(latest, averages);
+            attachBreakdownCardEvents(breakdown, latest, averages);
           } catch (e) {
             console.error("Home dashboard error", e);
           }
         }
 
-        function buildBreakdownCards(entry) {
+        // Calcula promedios globales usando TODOS los días
+        function computeGlobalAverages(history) {
+          const CAT_ES = ["transporte", "energia", "alimentacion", "residuos"];
+
+          const sums = Object.fromEntries(CAT_ES.map((k) => [k, 0]));
+          let dayCount = 0;
+          let totalSum = 0;
+
+          for (const day of history) {
+            dayCount++;
+            const byCat = day?.totals?.byCategory || {};
+            const inputs = Array.isArray(day?.inputs) ? day.inputs : [];
+
+            const computed = { ...byCat };
+            if (inputs.length) {
+              for (const it of inputs) {
+                const k = String(it.category || "").toLowerCase();
+                const v = Number(it.co2e || 0);
+                computed[k] = (computed[k] || 0) + v;
+              }
+            }
+
+            for (const k of CAT_ES) sums[k] += Number(computed[k] || 0);
+
+            const totalsCo2e = Number(day?.totals?.co2e || 0);
+            const fallbackTotal = Object.values(computed).reduce(
+              (a, b) => a + Number(b || 0),
+              0
+            );
+            totalSum += totalsCo2e > 0 ? totalsCo2e : fallbackTotal;
+          }
+
+          const avgByCategory = Object.fromEntries(
+            Object.entries(sums).map(([k, v]) => [
+              k,
+              dayCount ? v / dayCount : 0,
+            ])
+          );
+
+          return {
+            dayCount,
+            avgByCategory, // kg CO₂e/día por categoría
+            avgTotalPerDay: dayCount ? totalSum / dayCount : 0, // kg CO₂e/día total
+          };
+        }
+
+        // Render: tarjetas ULTRA COMPACTAS (ícono, label y % en líneas separadas, sin espacios extra)
+        // + margen mínimo a la izquierda para cada card
+        function buildBreakdownCards(entry, averages) {
           const cats = [
             {
               key: "transport",
@@ -2345,36 +2400,174 @@
               color: "text-purple-600",
             },
           ];
-          const byCat = entry
-            ? entry.categories || entry?.totals?.byCategory || {}
-            : {};
-          const total = Number(
-            entry ? entry.total ?? entry?.totals?.co2e ?? 1 : 1
-          );
-          function valFor(k, kES) {
-            return Number(byCat[k] ?? byCat[kES] ?? 0);
-          }
+
+          const avgMap = averages?.avgByCategory || {};
+          const avgTotal = Number(averages?.avgTotalPerDay || 0);
+
           return cats
             .map((c) => {
-              const v = valFor(c.key, c.keyES);
-              const bar = Math.max(
-                0,
-                Math.min(100, Math.round(((v > 0 ? v : 0) / total) * 100))
-              );
-              return `<div class="rounded-2xl bg-white dark:bg-gray-900 p-4 shadow-sm">
-        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full ${
-          c.bg
-        } ${c.color}">
-          <span class="material-symbols-outlined">${c.icon}</span>
+              const vAvg = Number(avgMap[c.keyES] ?? avgMap[c.key] ?? 0);
+              const pct =
+                avgTotal > 0
+                  ? Math.max(0, Math.min(100, (vAvg / avgTotal) * 100))
+                  : 0;
+
+              // Estructura en columna: 1) ícono, 2) label, 3) %
+              // Márgenes y leading mínimos (sin espacios extra entre líneas)
+              return `
+      <button
+        class="pg-card ml-[8px] w-full text-left rounded-2xl bg-white dark:bg-gray-900 pt-2 pb-3 px-3 shadow-sm focus:outline-none active:scale-[0.99] transition"
+        style="min-height: 80px; height:auto;"
+        data-key="${c.key}" data-keyes="${c.keyES}" data-label="${
+                c.label
+              }" data-icon="${c.icon}"
+      >
+        <div class="flex flex-col leading-none">
+          <div class="flex h-7 w-7 items-center justify-center rounded-full ${
+            c.bg
+          } ${c.color}">
+            <span class="material-symbols-outlined text-[15px] leading-none">${
+              c.icon
+            }</span>
+          </div>
+          <span class="mt-[2px] font-semibold text-[var(--text-primary)] text-[14px] pt-2 pb-2 leading-none">${
+            c.label
+          }</span>
+          <span class="mt-[2px] font-bold text-[16px] text-[var(--text-primary)] pt-2 pb-2 leading-none">${pct.toFixed(
+            0
+          )}%</span>
         </div>
-        <p class="font-semibold text-[var(--text-primary)]">${c.label}</p>
-        <p class="text-sm text-[var(--text-secondary)]">${
-          v ? v.toFixed(2) + " kg CO₂e" : "Sin datos"
-        }</p>
-        <div class="mt-2 h-1 w-full rounded-full bg-gray-200 overflow-hidden"><div style="width:${bar}%" class="h-1 bg-[var(--primary-color)]"></div></div>
-      </div>`;
+        <div class="mt-1 h-[6px] w-full rounded-full bg-gray-200 overflow-hidden">
+          <div style="width:${pct}%"
+               class="h-[6px] bg-[var(--primary-color)]"></div>
+        </div>
+      </button>
+    `;
             })
             .join("");
+        }
+
+        // Listeners para abrir el bottom-sheet con los detalles (Hoy + Promedio global)
+        function attachBreakdownCardEvents(container, entry, averages) {
+          const avgMap = averages?.avgByCategory || {};
+          const avgTotal = Number(averages?.avgTotalPerDay || 0);
+          const dayCount = averages?.dayCount || 0;
+
+          function todayValFor(k, kES) {
+            const byCat = entry
+              ? entry.categories || entry?.totals?.byCategory || {}
+              : {};
+            const fromTotals = Number(byCat[k] ?? byCat[kES] ?? 0);
+            if (fromTotals > 0) return fromTotals;
+
+            const inputs = Array.isArray(entry?.inputs) ? entry.inputs : [];
+            const target = String(kES || k || "").toLowerCase();
+            const fromInputs = inputs
+              .filter((i) => String(i.category || "").toLowerCase() === target)
+              .reduce((acc, i) => acc + Number(i.co2e || 0), 0);
+            return Number(fromInputs || 0);
+          }
+
+          container.querySelectorAll(".pg-card").forEach((card) => {
+            card.addEventListener("click", () => {
+              const key = card.dataset.key;
+              const keyES = card.dataset.keyes;
+              const label = card.dataset.label;
+              const icon = card.dataset.icon;
+
+              const vToday = todayValFor(key, keyES);
+              const vAvg = Number(avgMap[keyES] ?? avgMap[key] ?? 0);
+              const pct = avgTotal > 0 ? (vAvg / avgTotal) * 100 : 0;
+
+              showBreakdownBottomSheet({
+                label,
+                icon,
+                today: vToday,
+                avg: vAvg,
+                pct,
+                dayCount,
+              });
+            });
+          });
+        }
+
+        // Bottom-sheet / modal móvil (igual que antes)
+        function showBreakdownBottomSheet({
+          label,
+          icon,
+          today,
+          avg,
+          pct,
+          dayCount,
+        }) {
+          let overlay = document.getElementById("pgModal");
+          if (!overlay) {
+            overlay = document.createElement("div");
+            overlay.id = "pgModal";
+            overlay.className =
+              "fixed inset-0 z-[100] bg-black/40 flex items-end sm:items-center justify-center";
+            document.body.appendChild(overlay);
+          }
+
+          overlay.innerHTML = `
+    <div class="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-lg translate-y-0">
+      <div class="flex items-start gap-3">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[var(--primary-color)]">
+          <span class="material-symbols-outlined">${icon}</span>
+        </div>
+        <div class="flex-1">
+          <p class="text-lg font-semibold text-[var(--text-primary)]">${label}</p>
+          <p class="text-sm text-[var(--text-secondary)]">Detalle de emisiones</p>
+        </div>
+        <button id="pgModalClose" class="ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-3">
+        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+          <p class="text-xs text-[var(--text-secondary)]">Huella original</p>
+          <p class="text-base font-medium text-[var(--text-primary)]">${
+            today ? today.toFixed(2) + " kg CO₂e" : "Sin datos"
+          }</p>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+          <p class="text-xs text-[var(--text-secondary)]">Promedio(${
+            dayCount || 0
+          } días)</p>
+          <p class="text-base font-medium text-[var(--text-primary)]">${
+            avg ? avg.toFixed(2) + " kg CO₂e" : "—"
+          }</p>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+          <p class="text-xs text-[var(--text-secondary)]">% del promedio total</p>
+          <div class="flex items-end justify-between">
+            <p class="text-xl font-semibold text-[var(--text-primary)]">${pct.toFixed(
+              0
+            )}%</p>
+            <div class="ml-4 w-2/3 h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div class="h-2 bg-[var(--primary-color)]" style="width:${Math.max(
+                0,
+                Math.min(100, pct)
+              )}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+          function close() {
+            overlay.remove();
+          }
+          overlay.onclick = (e) => {
+            if (e.target === overlay) close();
+          };
+          overlay
+            .querySelector("#pgModalClose")
+            ?.addEventListener("click", close);
         }
 
         function pgRenderProgressScreen() {
