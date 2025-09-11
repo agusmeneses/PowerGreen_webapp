@@ -499,17 +499,17 @@
         }
       }
 
-    /* Ocultar flechas en Chrome, Safari, Edge */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+      /* Ocultar flechas en Chrome, Safari, Edge */
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
 
-/* Ocultar flechas en Firefox */
-input[type="number"] {
-  -moz-appearance: textfield;
-}
+      /* Ocultar flechas en Firefox */
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
     </style>
   </head>
   <body class="bg-surface dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -542,6 +542,8 @@ input[type="number"] {
         </button>
       </div>
     </header>
+
+    <!--Onboarding -->
 
     <main class="container mx-auto px-4 py-6">
       <!-- === Inicio (Home) — estilo Stitch integrado === -->
@@ -655,7 +657,8 @@ input[type="number"] {
           class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-8"
         >
           <div class="text-center mb-8">
-            <img class="rounded-full shadow-md w-20 h-20 mx-auto mb-4"
+            <img
+              class="rounded-full shadow-md w-20 h-20 mx-auto mb-4"
               src="index.png"
               alt="PowerGreen Logo"
             />
@@ -739,70 +742,6 @@ input[type="number"] {
           </div>
 
           <div id="authMessage" class="mt-4 text-center hidden"></div>
-        </div>
-      </section>
-      <!-- Sección de Bienvenida -->
-      <section id="welcome" class="text-center py-10 px-4 hidden">
-        <div class="max-w-4xl mx-auto">
-          <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary">
-            PowerGreen
-          </h1>
-
-          <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 text-left animate-fade-in"
-          >
-            <h2 class="text-2xl font-bold mb-4 text-primary">
-              ¿Qué es la Huella de Carbono?
-            </h2>
-            <p class="mb-4">
-              La huella de carbono es un indicador ambiental que mide la
-              cantidad total de emisiones de gases de efecto invernadero (GEI),
-              expresadas en toneladas de dióxido de carbono equivalente (CO₂e),
-              que son liberadas directa o indirectamente a la atmósfera como
-              resultado de actividades humanas.
-            </p>
-            <p class="mb-4">
-              Estas actividades pueden incluir desde el uso de medios de
-              transporte, el consumo energético en el hogar, la alimentación, el
-              consumo de bienes y servicios, hasta la generación de residuos.
-            </p>
-          </div>
-
-          <div class="grid md:grid-cols-2 gap-6 mb-8">
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 animate-slide-up"
-            >
-              <h3 class="text-xl font-bold mb-3 text-primary">
-                ¿Por qué es importante?
-              </h3>
-              <p>
-                La huella de carbono es una herramienta clave para comprender el
-                impacto que tienen nuestros hábitos cotidianos en el cambio
-                climático. Al reducir nuestras emisiones, contribuimos a limitar
-                el aumento de la temperatura global.
-              </p>
-            </div>
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 animate-slide-up"
-              style="animation-delay: 0.2s"
-            >
-              <h3 class="text-xl font-bold mb-3 text-primary">
-                ¿Qué es PowerGreen?
-              </h3>
-              <p>
-                PowerGreen es una página web que nace con un propósito claro:
-                que cada persona pueda conocer el impacto que deja en el planeta
-                y, sobre todo, que tenga el poder de reducirlo.
-              </p>
-            </div>
-          </div>
-
-          <button
-            id="getStartedBtn"
-            class="bg-primary hover:bg-secondary text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg animate-bounce"
-          >
-            Comienza Ahora
-          </button>
         </div>
       </section>
 
@@ -2426,34 +2365,34 @@ input[type="number"] {
               // Estructura en columna: 1) ícono, 2) label, 3) %
               // Márgenes y leading mínimos (sin espacios extra entre líneas)
               return `
-      <button
-        class="pg-card ml-[8px] w-full text-left rounded-2xl bg-white dark:bg-gray-900 pt-2 pb-3 px-3 shadow-sm focus:outline-none active:scale-[0.99] transition"
-        style="min-height: 80px; height:auto;"
-        data-key="${c.key}" data-keyes="${c.keyES}" data-label="${
+            <button
+              class="pg-card ml-[8px] w-full text-left rounded-2xl bg-white dark:bg-gray-900 pt-2 pb-3 px-3 shadow-sm focus:outline-none active:scale-[0.99] transition"
+              style="min-height: 80px; height:auto;"
+              data-key="${c.key}" data-keyes="${c.keyES}" data-label="${
                 c.label
               }" data-icon="${c.icon}"
-      >
-        <div class="flex flex-col leading-none">
-          <div class="flex h-7 w-7 items-center justify-center rounded-full ${
-            c.bg
-          } ${c.color}">
-            <span class="material-symbols-outlined text-[15px] leading-none">${
-              c.icon
-            }</span>
-          </div>
-          <span class="mt-[2px] font-semibold text-[var(--text-primary)] text-[14px] pt-2 pb-2 leading-none">${
-            c.label
-          }</span>
-          <span class="mt-[2px] font-bold text-[16px] text-[var(--text-primary)] pt-2 pb-2 leading-none">${pct.toFixed(
-            0
-          )}%</span>
-        </div>
-        <div class="mt-1 h-[6px] w-full rounded-full bg-gray-200 overflow-hidden">
-          <div style="width:${pct}%"
-               class="h-[6px] bg-[var(--primary-color)]"></div>
-        </div>
-      </button>
-    `;
+            >
+              <div class="flex flex-col leading-none">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full ${
+                  c.bg
+                } ${c.color}">
+                  <span class="material-symbols-outlined text-[15px] leading-none">${
+                    c.icon
+                  }</span>
+                </div>
+                <span class="mt-[2px] font-semibold text-[var(--text-primary)] text-[14px] pt-2 pb-2 leading-none">${
+                  c.label
+                }</span>
+                <span class="mt-[2px] font-bold text-[16px] text-[var(--text-primary)] pt-2 pb-2 leading-none">${pct.toFixed(
+                  0
+                )}%</span>
+              </div>
+              <div class="mt-1 h-[6px] w-full rounded-full bg-gray-200 overflow-hidden">
+                <div style="width:${pct}%"
+                     class="h-[6px] bg-[var(--primary-color)]"></div>
+              </div>
+            </button>
+          `;
             })
             .join("");
         }
@@ -2521,54 +2460,54 @@ input[type="number"] {
           }
 
           overlay.innerHTML = `
-    <div class="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-lg translate-y-0">
-      <div class="flex items-start gap-3">
-        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[var(--primary-color)]">
-          <span class="material-symbols-outlined">${icon}</span>
-        </div>
-        <div class="flex-1">
-          <p class="text-lg font-semibold text-[var(--text-primary)]">${label}</p>
-          <p class="text-sm text-[var(--text-secondary)]">Detalle de emisiones</p>
-        </div>
-        <button id="pgModalClose" class="ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
+          <div class="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-lg translate-y-0">
+            <div class="flex items-start gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[var(--primary-color)]">
+                <span class="material-symbols-outlined">${icon}</span>
+              </div>
+              <div class="flex-1">
+                <p class="text-lg font-semibold text-[var(--text-primary)]">${label}</p>
+                <p class="text-sm text-[var(--text-secondary)]">Detalle de emisiones</p>
+              </div>
+              <button id="pgModalClose" class="ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
 
-      <div class="mt-4 space-y-3">
-        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-          <p class="text-xs text-[var(--text-secondary)]">Huella original</p>
-          <p class="text-base font-medium text-[var(--text-primary)]">${
-            today ? today.toFixed(2) + " kg CO₂e" : "Sin datos"
-          }</p>
-        </div>
+            <div class="mt-4 space-y-3">
+              <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                <p class="text-xs text-[var(--text-secondary)]">Huella original</p>
+                <p class="text-base font-medium text-[var(--text-primary)]">${
+                  today ? today.toFixed(2) + " kg CO₂e" : "Sin datos"
+                }</p>
+              </div>
 
-        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-          <p class="text-xs text-[var(--text-secondary)]">Promedio(${
-            dayCount || 0
-          } días)</p>
-          <p class="text-base font-medium text-[var(--text-primary)]">${
-            avg ? avg.toFixed(2) + " kg CO₂e" : "—"
-          }</p>
-        </div>
+              <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                <p class="text-xs text-[var(--text-secondary)]">Promedio(${
+                  dayCount || 0
+                } días)</p>
+                <p class="text-base font-medium text-[var(--text-primary)]">${
+                  avg ? avg.toFixed(2) + " kg CO₂e" : "—"
+                }</p>
+              </div>
 
-        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-          <p class="text-xs text-[var(--text-secondary)]">% del promedio total</p>
-          <div class="flex items-end justify-between">
-            <p class="text-xl font-semibold text-[var(--text-primary)]">${pct.toFixed(
-              0
-            )}%</p>
-            <div class="ml-4 w-2/3 h-2 rounded-full bg-gray-200 overflow-hidden">
-              <div class="h-2 bg-[var(--primary-color)]" style="width:${Math.max(
-                0,
-                Math.min(100, pct)
-              )}%"></div>
+              <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                <p class="text-xs text-[var(--text-secondary)]">% del promedio total</p>
+                <div class="flex items-end justify-between">
+                  <p class="text-xl font-semibold text-[var(--text-primary)]">${pct.toFixed(
+                    0
+                  )}%</p>
+                  <div class="ml-4 w-2/3 h-2 rounded-full bg-gray-200 overflow-hidden">
+                    <div class="h-2 bg-[var(--primary-color)]" style="width:${Math.max(
+                      0,
+                      Math.min(100, pct)
+                    )}%"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  `;
+        `;
 
           function close() {
             overlay.remove();
@@ -3768,7 +3707,6 @@ input[type="number"] {
         z-index: 40;
       }
       #quickAddBtn {
-        
         color: #fff !important;
       }
 
