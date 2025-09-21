@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>PowerGreen Onboarding</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Fuentes & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"
+      rel="stylesheet"
+    />
+
+    <!-- Paleta -->
+    <style type="text/tailwindcss">
+      :root {
+        --primary-light: #254d32;
+        --secondary-light: #6b7f5b;
+        --accent-light: #a3b18a;
+        --ink-light: #1f3d2b;
+        --surface-light: #f8ebcf;
+      }
+    </style>
+
+    <!-- Tailwind config -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "var(--primary-light)",
+              secondary: "var(--secondary-light)",
+              accent: "var(--accent-light)",
+              ink: "var(--ink-light)",
+              surface: "var(--surface-light)",
+            },
+            fontFamily: {
+              display: [
+                "Be Vietnam Pro",
+                "system-ui",
+                "Segoe UI",
+                "Arial",
+                "sans-serif",
+              ],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "0.75rem",
+              xl: "1rem",
+              full: "9999px",
+            },
+            keyframes: {
+              "fade-scale-in": {
+                "0%": { opacity: "0", transform: "scale(.98)" },
+                "100%": { opacity: "1", transform: "scale(1)" },
+              },
+            },
+            animation: {
+              "fade-in": "fade-scale-in 240ms cubic-bezier(.2,.8,.2,1) both",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      /* antes: body { min-height: max(884px, 100dvh); } -> QUITADO */
+      html,
+      body {
+        height: 100%;
+      }
+      .screen {
+        min-height: 100svh; /* ocupar siempre la ventana, sin “extra” */
+        transition: opacity 0.24s cubic-bezier(0.2, 0.8, 0.2, 1),
+          transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .screen[hidden] {
+        display: block !important;
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        transform: translateY(8px);
+      }
+      .screen[data-active="true"] {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .material-symbols-rounded {
+        font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 40;
+        font-size: 28px;
+        line-height: 1;
+      }
+    </style>
+  </head>
+
+  <body class="bg-surface text-ink font-display">
+    <div id="app" class="relative flex flex-col h-screen overflow-hidden">
+      <!-- Splash -->
+      <section
+        id="screen-0"
+        class="screen flex flex-col bg-gradient-to-br from-primary to-secondary"
+        data-active="true"
+        aria-label="Splash"
+      >
+        <div class="flex-grow flex items-center justify-center">
+          <div class="text-center text-surface">
+            <!-- Logo PowerGreen (SVG removido) -->
+            <img
+              src="logo.png"
+              alt="Logo PowerGreen"
+              class="mx-auto mb-8 size-28 md:size-32 lg:size-36 object-contain drop-shadow-lg"
+            />
+
+            <h1 class="text-4xl font-black mb-2">PowerGreen</h1>
+            <p class="text-lg text-accent">Reduce tu huella de carbono.</p>
+          </div>
+        </div>
+        <div class="p-6">
+          <button
+            id="btn-start"
+            class="w-full h-12 bg-surface text-ink font-bold rounded-lg active:scale-95 transition"
+          >
+            Comenzar
+          </button>
+          <p class="text-xs text-surface/80 text-center mt-4">
+            © 2024 PowerGreen. Todos los derechos reservados.
+          </p>
+        </div>
+      </section>
+
+      <!-- Nombre -->
+      <section
+        id="screen-1"
+        class="screen flex flex-col bg-surface"
+        hidden
+        aria-label="Nombre"
+      >
+        <header class="p-4 flex justify-end">
+          <button
+            id="btn-skip-1"
+            class="text-primary font-bold text-sm h-11 px-4"
+          >
+            Omitir
+          </button>
+        </header>
+
+        <main
+          class="flex-grow flex flex-col justify-center gap-6 px-6 text-center animate-fade-in"
+        >
+          <h2 class="text-2xl font-bold">
+            Tu asistente para reducir tu huella de carbono
+          </h2>
+
+          <div class="w-full max-w-sm mx-auto text-left">
+            <label for="input-name" class="sr-only">¿Cómo te llamas?</label>
+            <input
+              id="input-name"
+              type="text"
+              placeholder="¿Cómo te llamas?"
+              class="w-full h-14 px-4 bg-primary/10 border-0 rounded-lg placeholder-ink/60 text-ink focus:ring-2 focus:ring-primary"
+            />
+            <p class="text-xs text-ink/70 mt-2">
+              Tu nombre se usará para personalizar retos y notificaciones.
+            </p>
+          </div>
+        </main>
+
+        <footer class="px-6 pb-6 pt-2">
+          <div class="flex flex-col gap-3">
+            <button
+              id="btn-continue-name"
+              class="w-full h-12 bg-primary text-white rounded-lg font-bold text-base active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              Continuar
+            </button>
+            <button
+              id="btn-later-name"
+              class="w-full h-12 bg-primary/10 text-primary rounded-lg font-bold text-base active:scale-95 transition"
+            >
+              Más tarde
+            </button>
+          </div>
+        </footer>
+      </section>
+
+      <!-- Beneficios -->
+      <section
+        id="screen-2"
+        class="screen flex flex-col bg-surface"
+        hidden
+        aria-label="Beneficios"
+      >
+        <header class="flex justify-end p-4">
+          <button
+            id="btn-skip-2"
+            class="text-primary font-bold text-base px-3 py-2"
+          >
+            Saltar
+          </button>
+        </header>
+
+        <main
+          class="flex-grow flex flex-col justify-center px-4 animate-fade-in"
+        >
+          <div
+            class="flex-grow flex flex-col justify-center gap-4 max-w-md mx-auto"
+          >
+            <div class="text-center mb-1">
+              <p id="hello-name" class="text-sm text-ink/70"></p>
+            </div>
+
+            <div
+              class="bg-white/80 p-4 rounded-xl flex items-center gap-4 border border-black/5"
+            >
+              <div class="flex-1 space-y-1">
+                <h3 class="font-bold text-base text-ink">Calcula tu huella</h3>
+                <p class="text-sm text-ink/70">
+                  Mide impacto y recibe recomendaciones.
+                </p>
+              </div>
+              <span class="material-symbols-rounded text-primary">eco</span>
+            </div>
+
+            <div
+              class="bg-white/80 p-4 rounded-xl flex items-center gap-4 border border-black/5"
+            >
+              <div class="flex-1 space-y-1">
+                <h3 class="font-bold text-base text-ink">Retos y puntos</h3>
+                <p class="text-sm text-ink/70">
+                  Retos semanales para reducir consumo.
+                </p>
+              </div>
+              <span class="material-symbols-rounded text-primary"
+                >emoji_events</span
+              >
+            </div>
+
+            <div
+              class="bg-white/80 p-4 rounded-xl flex items-center gap-4 border border-black/5"
+            >
+              <div class="flex-1 space-y-1">
+                <h3 class="font-bold text-base text-ink">Comunidad</h3>
+                <p class="text-sm text-ink/70">
+                  Comparte logros y suma puntos.
+                </p>
+              </div>
+              <span class="material-symbols-rounded text-primary"
+                >diversity_3</span
+              >
+            </div>
+          </div>
+        </main>
+
+        <footer class="pt-4 pb-6 px-4">
+          <button
+            id="btn-next-benefits"
+            class="w-full bg-primary text-white font-bold h-12 rounded-lg active:scale-95 transition"
+          >
+            Siguiente
+          </button>
+        </footer>
+      </section>
+
+      <!-- Permisos -->
+      <section
+        id="screen-3"
+        class="screen flex flex-col bg-surface"
+        hidden
+        aria-label="Permisos"
+      >
+        <header class="flex justify-end p-6">
+          <button id="btn-skip-3" class="font-bold text-primary text-base">
+            Saltar
+          </button>
+        </header>
+
+        <main
+          class="flex-grow flex flex-col justify-center items-center text-center -mt-8 px-6 animate-fade-in"
+        >
+          <h2 class="text-3xl font-bold text-ink">Permisos</h2>
+          <p class="text-ink/80 mt-2 max-w-sm">
+            PowerGreen necesita algunos permisos para brindarte la mejor
+            experiencia.
+          </p>
+
+          <div class="w-full max-w-md mt-10 space-y-4">
+            <div class="flex items-center gap-4 p-4 rounded-lg bg-white/80">
+              <div
+                class="flex items-center justify-center size-12 rounded-lg bg-primary/10 text-primary"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true"
+                  >notifications_active</span
+                >
+              </div>
+              <div class="text-left">
+                <h3 class="font-bold text-ink">Notificaciones</h3>
+                <p class="text-sm text-ink/70">
+                  Enviar recordatorios y actualizaciones de retos.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 p-4 rounded-lg bg-white/80">
+              <div
+                class="flex items-center justify-center size-12 rounded-lg bg-primary/10 text-primary"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true"
+                  >photo_camera</span
+                >
+              </div>
+              <div class="text-left">
+                <h3 class="font-bold text-ink">Cámara</h3>
+                <p class="text-sm text-ink/70">
+                  Escanear productos para datos de huella.
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <footer class="w-full max-w-md mx-auto px-6 pb-8">
+          <div class="flex flex-col gap-3">
+            <button
+              id="btn-permitir"
+              class="w-full h-12 rounded-lg bg-primary text-white font-bold text-base active:scale-95 transition"
+            >
+              Permitir
+            </button>
+            <button
+              id="btn-configurar-despues"
+              class="w-full h-12 rounded-lg bg-primary/10 text-primary font-bold text-base active:scale-95 transition"
+            >
+              Configurar más tarde
+            </button>
+          </div>
+
+          <a
+            class="block text-center text-sm text-ink/70 mt-4 underline"
+            href="#"
+            >Política de privacidad</a
+          >
+        </footer>
+      </section>
+
+      <!-- Toast -->
+      <div
+        id="toast-final"
+        class="pointer-events-none opacity-0 fixed left-1/2 -translate-x-1/2 bottom-6 z-50 bg-ink text-surface px-4 py-3 rounded-lg shadow-lg transition-opacity duration-300"
+        role="status"
+        aria-live="polite"
+      >
+        ✅ ¡Onboarding completado!
+      </div>
+    </div>
+
+    <!-- Interacciones -->
+    <script>
+      const screens = [
+        document.getElementById("screen-0"),
+        document.getElementById("screen-1"),
+        document.getElementById("screen-2"),
+        document.getElementById("screen-3"),
+      ];
+      let current = 0;
+
+      const nameInput = document.getElementById("input-name");
+      const btnContinueName = document.getElementById("btn-continue-name");
+      const helloName = document.getElementById("hello-name");
+      const toastFinal = document.getElementById("toast-final");
+
+      function showScreen(index) {
+        if (index < 0 || index >= screens.length) return;
+        screens[current].setAttribute("hidden", "");
+        screens[current].removeAttribute("data-active");
+        current = index;
+        screens[current].removeAttribute("hidden");
+        screens[current].setAttribute("data-active", "true");
+        const focusable = screens[current].querySelector(
+          'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
+        );
+        focusable?.focus({ preventScroll: true });
+      }
+
+      function validateName() {
+        const ok = nameInput.value.trim().length > 0;
+        btnContinueName.disabled = !ok;
+        return ok;
+      }
+      nameInput?.addEventListener("input", validateName);
+      validateName();
+
+      function finishOnboarding() {
+        // Mostrar el toast
+        toastFinal.style.opacity = "1";
+        setTimeout(() => {
+          toastFinal.style.opacity = "0";
+        }, 2200);
+
+        // Si estamos embebidos (?embed=1) avisamos al padre para que cambie a la Calculadora
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const embedded = params.get("embed");
+          if (
+            window.parent &&
+            window.parent !== window &&
+            (embedded === "1" || embedded === "true")
+          ) {
+            window.parent.postMessage({ type: "pg-onboarding-completed" }, "*");
+          }
+        } catch (e) {
+          // no-op
+        }
+
+        console.log("Onboarding completado");
+      }
+
+      // Navegación
+      document
+        .getElementById("btn-start")
+        .addEventListener("click", () => showScreen(1));
+      document
+        .getElementById("btn-skip-1")
+        .addEventListener("click", () => showScreen(2));
+      document
+        .getElementById("btn-later-name")
+        .addEventListener("click", () => showScreen(2));
+      btnContinueName.addEventListener("click", () => {
+        if (validateName()) {
+          helloName.textContent = `Hola, ${nameInput.value.trim()} 👋`;
+          showScreen(2);
+        }
+      });
+      nameInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !btnContinueName.disabled)
+          btnContinueName.click();
+      });
+      document
+        .getElementById("btn-skip-2")
+        .addEventListener("click", () => showScreen(3));
+      document
+        .getElementById("btn-next-benefits")
+        .addEventListener("click", () => showScreen(3));
+      document
+        .getElementById("btn-skip-3")
+        .addEventListener("click", finishOnboarding);
+      document
+        .getElementById("btn-permitir")
+        .addEventListener("click", finishOnboarding);
+      document
+        .getElementById("btn-configurar-despues")
+        .addEventListener("click", finishOnboarding);
+    </script>
+  </body>
+</html>

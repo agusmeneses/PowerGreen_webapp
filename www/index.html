@@ -1821,6 +1821,60 @@
         const authSection = document.getElementById("auth-section");
         const tabContents = $$(".tab-content");
 
+        // NUEVO === Onboarding overlay helpers ===
+        const onboardingOverlay = document.getElementById("onboardingOverlay");
+        const onboardingFrame = document.getElementById("onboardingFrame");
+
+        /**
+         * Devuelve true si el usuario NO tiene huellas guardadas (usuario nuevo)
+         */
+        async function shouldShowOnboarding(uid) {
+          try {
+            const history =
+              await window.firebaseAuth.firestore.getFootprintHistory(uid);
+            const hasAny = Array.isArray(history) && history.length > 0;
+            return !hasAny;
+          } catch (e) {
+            console.warn("No se pudo consultar huellas:", e);
+            // Si falla la consulta, por seguridad NO bloqueamos al usuario: no mostramos onboarding.
+            return false;
+          }
+        }
+
+        function showOnboardingOverlay() {
+          if (!onboardingOverlay) return;
+          onboardingOverlay.classList.remove("hidden");
+          // Opcional: ocultar header/footer mientras está el overlay
+          if (header) header.style.display = "none";
+          if (footer) footer.style.display = "none";
+        }
+
+        function hideOnboardingOverlay() {
+          if (!onboardingOverlay) return;
+          onboardingOverlay.classList.add("hidden");
+          if (header) header.style.display = "flex";
+          if (footer) footer.style.display = "block";
+        }
+
+        // Recibe el "fin del onboarding" desde onboarding.html
+        function handleOnboardingMessage(ev) {
+          // Aceptamos el mensaje del mismo origen. Si sirves archivos estaticos, puedes omitir el check.
+          // if (ev.origin !== window.location.origin) return;
+          if (ev?.data && ev.data.type === "pg-onboarding-completed") {
+            // Dejamos que el toast "¡Onboarding completado!" aparezca un instante
+            setTimeout(() => {
+              hideOnboardingOverlay();
+              // Llevar al usuario a la Calculadora
+              try {
+                showTab("calculator");
+              } catch {}
+            }, 700);
+          }
+        }
+
+        // Escuchar UNA sola vez durante la sesión
+        window.addEventListener("message", handleOnboardingMessage, false);
+
         // Bottom nav buttons
         const bottomTabs = footer ? footer.querySelectorAll("[data-tab]") : [];
 
@@ -2071,9 +2125,28 @@
 
         waitForFirebaseReady()
           .then(() => {
-            window.firebaseAuth.onAuthStateChanged((user) => {
-              if (user) setLoggedInUI();
-              else setLoggedOutUI();
+            window.firebaseAuth.onAuthStateChanged(async (user) => {
+              if (user) {
+                // UI "logueado" normal
+                setLoggedInUI();
+
+                // Si ya mostramos el onboarding en esta sesión, no lo repitas
+                if (sessionStorage.getItem("pg-onboarding-shown") === "1")
+                  return;
+
+                try {
+                  const isNew = await shouldShowOnboarding(user.uid);
+                  if (isNew) {
+                    sessionStorage.setItem("pg-onboarding-shown", "1");
+                    showOnboardingOverlay();
+                  }
+                } catch (e) {
+                  console.warn("onboarding check:", e);
+                }
+              } else {
+                setLoggedOutUI();
+                sessionStorage.removeItem("pg-onboarding-shown");
+              }
             });
           })
           .catch((e) => {
@@ -4301,5 +4374,16 @@
         };
       })();
     </script>
+    <!-- === Onboarding overlay (solo para usuarios sin huella) === -->
+    <div
+      id="onboardingOverlay"
+      class="fixed inset-0 z-[100] bg-black/70 hidden"
+    >
+      <iframe
+        id="onboardingFrame"
+        src="onboarding.html?embed=1"
+        class="w-full h-full border-0 bg-surface"
+      ></iframe>
+    </div>
   </body>
 </html>
