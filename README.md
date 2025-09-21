@@ -101,10 +101,5 @@ Si quieres contribuir al proyecto, por favor:
 4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Abre un Pull Request
 
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia [especificar licencia] - mira el archivo [LICENSE](LICENSE) para detalles.
-
----
 
 💚 **¡Gracias por contribuir a un planeta más verde!**
