@@ -385,6 +385,14 @@
         transition: transform 0.25s ease, box-shadow 0.25s ease,
           background 0.25s ease;
       }
+      /* HOME → Desglose: tarjetas compactas */
+#homeBreakdown .pg-card{
+  min-height: 0;      /* anula el 280px */
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.75rem;   /* opcional: las hace un poco más compactas */
+}
+
       .dark .pg-card {
         background: #111827;
         box-shadow: 0 10px 30px rgba(255, 255, 255, 0.06);
@@ -2326,321 +2334,308 @@
         }
 
         // Home dashboard from Firestore (uses window.firebaseAuth.firestore.getFootprintHistory)
-        async function pgLoadHomeDashboard() {
-          const user = window.firebaseAuth?.auth?.currentUser;
-          const totalEl = document.getElementById("homeTotal");
-          const dateEl = document.getElementById("homeDate");
-          const deltaChip = document.getElementById("homeDelta");
-          const deltaText = document.getElementById("homeDeltaText");
-          const breakdown = document.getElementById("homeBreakdown");
-          if (!user || !breakdown || !totalEl) return;
-          try {
-            const history =
-              await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
-            if (!history.length) {
-              totalEl.textContent = "—";
-              if (dateEl) dateEl.textContent = "—";
-              breakdown.innerHTML = buildBreakdownCards(null);
-              return;
-            }
+// === FIX HOME: normalizar datos, % del total de HOY y promedios correctos ===
 
-            // Promedios globales (todos los días del usuario)
-            const averages = computeGlobalAverages(history);
+// Mapeo de claves a español (para unificar)
+function toESKey(k) {
+  const map = {
+    transport: "transporte",
+    energy: "energia",
+    food: "alimentacion",
+    waste: "residuos",
+    clothing: "ropa",
+    electronics: "electronica",
+    consumption: "consumo",
+  };
+  const s = String(k || "").toLowerCase();
+  return map[s] || s;
+}
+function addCat(acc, k, v) {
+  const kk = toESKey(k);
+  if (acc[kk] == null) acc[kk] = 0;
+  acc[kk] += Number(v) || 0;
+}
 
-            const latest = history[0];
-            const prev = history[1] || null;
-            const total = Number(latest?.totals?.co2e ?? latest.total ?? 0);
-            const date =
-              latest.date ||
-              (latest.timestamp
-                ? new Date(
-                    latest.timestamp.seconds
-                      ? latest.timestamp.seconds * 1000
-                      : latest.timestamp
-                  )
-                    .toISOString()
-                    .substring(0, 10)
-                : "");
-            totalEl.textContent = total.toFixed(1);
-            if (dateEl) dateEl.textContent = date || "—";
-            if (prev && deltaChip && deltaText) {
-              const prevTotal =
-                Number(prev?.totals?.co2e ?? prev.total ?? 0) || 0;
-              const diff = prevTotal
-                ? ((total - prevTotal) / prevTotal) * 100
-                : 0;
-              deltaText.textContent = `${Math.abs(diff).toFixed(0)}% ${
-                diff <= 0 ? "vs anterior" : "más que anterior"
-              }`;
-              deltaChip.classList.remove("hidden");
-              const icon = deltaChip.querySelector(
-                ".material-symbols-outlined"
-              );
-              if (icon)
-                icon.textContent =
-                  diff <= 0 ? "arrow_downward" : "arrow_upward";
-            }
+/**
+ * Unifica TODO lo que haya en un día:
+ * - totals.byCategory (diario)
+ * - categories (calculadora/cuestionario)
+ * - inputs[] (diario crudo)
+ * Devuelve solo las 4 visibles en Home y el total correcto del día.
+ */
+function unifyDayTotals(day) {
+  const raw = {};
+  // 1) desde totals.byCategory
+  const byCat = day?.totals?.byCategory || {};
+  for (const [k, v] of Object.entries(byCat)) addCat(raw, k, v);
 
-            // Cards: porcentaje del promedio global + listeners para abrir el detalle
-            breakdown.innerHTML = buildBreakdownCards(latest, averages);
-            attachBreakdownCardEvents(breakdown, latest, averages);
-          } catch (e) {
-            console.error("Home dashboard error", e);
-          }
-        }
+  // 2) desde categories (guardadas por la calculadora)
+  const survey = day?.categories || {};
+  for (const [k, v] of Object.entries(survey)) addCat(raw, k, v);
 
-        // Calcula promedios globales usando TODOS los días
-        function computeGlobalAverages(history) {
-          const CAT_ES = ["transporte", "energia", "alimentacion", "residuos"];
+  // 3) desde inputs[] (registros diarios individuales)
+  const inputs = Array.isArray(day?.inputs) ? day.inputs : [];
+  for (const it of inputs) addCat(raw, it.category, it.co2e);
 
-          const sums = Object.fromEntries(CAT_ES.map((k) => [k, 0]));
-          let dayCount = 0;
-          let totalSum = 0;
+  // Solo las 4 del tablero Home
+  const byCat4 = {
+    transporte: raw.transporte || 0,
+    energia: raw.energia || 0,
+    alimentacion: raw.alimentacion || 0,
+    residuos: raw.residuos || 0,
+  };
 
-          for (const day of history) {
-            dayCount++;
-            const byCat = day?.totals?.byCategory || {};
-            const inputs = Array.isArray(day?.inputs) ? day.inputs : [];
+  const explicitTotal = Number(day?.totals?.co2e ?? day?.total ?? 0);
+  const sum = Object.values(byCat4).reduce((a, b) => a + Number(b || 0), 0);
+  const total = explicitTotal > 0 ? explicitTotal : sum;
 
-            const computed = { ...byCat };
-            if (inputs.length) {
-              for (const it of inputs) {
-                const k = String(it.category || "").toLowerCase();
-                const v = Number(it.co2e || 0);
-                computed[k] = (computed[k] || 0) + v;
-              }
-            }
+  return { byCat: byCat4, total };
+}
 
-            for (const k of CAT_ES) sums[k] += Number(computed[k] || 0);
+/**
+ * Promedios globales (kg CO₂e/día) considerando calculadora + diario
+ */
+ function computeGlobalAverages(history) {
+  const CAT_ES = ["transporte", "energia", "alimentacion", "residuos"];
+  const sums = Object.fromEntries(CAT_ES.map((k) => [k, 0]));
+  let dayCount = 0;
+  let totalSum = 0;
 
-            const totalsCo2e = Number(day?.totals?.co2e || 0);
-            const fallbackTotal = Object.values(computed).reduce(
-              (a, b) => a + Number(b || 0),
-              0
-            );
-            totalSum += totalsCo2e > 0 ? totalsCo2e : fallbackTotal;
-          }
+  for (const day of history) {
+    const byCat = (day?.totals?.byCategory) || {};
+    const total = Number(day?.totals?.co2e ?? day?.total ?? 0) || 0;
 
-          const avgByCategory = Object.fromEntries(
-            Object.entries(sums).map(([k, v]) => [
-              k,
-              dayCount ? v / dayCount : 0,
-            ])
-          );
+    for (const k of CAT_ES) sums[k] += Number(byCat[k] || 0);
+    totalSum += total;
+    dayCount++;
+  }
 
-          return {
-            dayCount,
-            avgByCategory, // kg CO₂e/día por categoría
-            avgTotalPerDay: dayCount ? totalSum / dayCount : 0, // kg CO₂e/día total
-          };
-        }
+  const avgByCategory = Object.fromEntries(
+    Object.entries(sums).map(([k, v]) => [k, dayCount ? v / dayCount : 0])
+  );
 
-        // Render: tarjetas ULTRA COMPACTAS (ícono, label y % en líneas separadas, sin espacios extra)
-        // + margen mínimo a la izquierda para cada card
-        function buildBreakdownCards(entry, averages) {
-          const cats = [
-            {
-              key: "transport",
-              keyES: "transporte",
-              label: "Transporte",
-              icon: "directions_car",
-              bg: "bg-blue-100",
-              color: "text-blue-600",
-            },
-            {
-              key: "energy",
-              keyES: "energia",
-              label: "Energía",
-              icon: "lightbulb",
-              bg: "bg-yellow-100",
-              color: "text-yellow-600",
-            },
-            {
-              key: "food",
-              keyES: "alimentacion",
-              label: "Alimentación",
-              icon: "restaurant",
-              bg: "bg-red-100",
-              color: "text-red-600",
-            },
-            {
-              key: "waste",
-              keyES: "residuos",
-              label: "Residuos",
-              icon: "delete",
-              bg: "bg-purple-100",
-              color: "text-purple-600",
-            },
-          ];
+  return {
+    dayCount,
+    avgByCategory,                   // kg CO₂e/día por categoría
+    avgTotalPerDay: dayCount ? totalSum / dayCount : 0, // kg CO₂e/día total
+  };
+}
 
-          const avgMap = averages?.avgByCategory || {};
-          const avgTotal = Number(averages?.avgTotalPerDay || 0);
+/**
+ * Tarjetas de desglose: ahora muestran % del total de HOY
+ */
+ function buildBreakdownCards(todayMap, todayTotal) {
+  const cats = [
+    { keyES: "transporte", label: "Transporte", icon: "directions_car", bg: "bg-blue-100",   color: "text-blue-600" },
+    { keyES: "energia",    label: "Energía",    icon: "lightbulb",       bg: "bg-yellow-100", color: "text-yellow-600" },
+    { keyES: "alimentacion",label: "Alimentación",icon:"restaurant",     bg: "bg-red-100",    color: "text-red-600" },
+    { keyES: "residuos",   label: "Residuos",   icon: "delete",          bg: "bg-purple-100", color: "text-purple-600" },
+  ];
 
-          return cats
-            .map((c) => {
-              const vAvg = Number(avgMap[c.keyES] ?? avgMap[c.key] ?? 0);
-              const pct =
-                avgTotal > 0
-                  ? Math.max(0, Math.min(100, (vAvg / avgTotal) * 100))
-                  : 0;
+  return cats.map((c) => {
+    const v = Number(todayMap?.[c.keyES] || 0);
+    const pct = todayTotal > 0 ? Math.max(0, Math.min(100, (v / todayTotal) * 100)) : 0;
 
-              // Estructura en columna: 1) ícono, 2) label, 3) %
-              // Márgenes y leading mínimos (sin espacios extra entre líneas)
-              return `
-            <button
-              class="pg-card ml-[8px] w-full text-left rounded-2xl bg-white dark:bg-gray-900 pt-2 pb-3 px-3 shadow-sm focus:outline-none active:scale-[0.99] transition"
-              style="min-height: 80px; height:auto;"
-              data-key="${c.key}" data-keyes="${c.keyES}" data-label="${
-                c.label
-              }" data-icon="${c.icon}"
-            >
-              <div class="flex flex-col leading-none">
-                <div class="flex h-7 w-7 items-center justify-center rounded-full ${
-                  c.bg
-                } ${c.color}">
-                  <span class="material-symbols-outlined text-[15px] leading-none">${
-                    c.icon
-                  }</span>
-                </div>
-                <span class="mt-[2px] font-semibold text-[var(--text-primary)] text-[14px] pt-2 pb-2 leading-none">${
-                  c.label
-                }</span>
-                <span class="mt-[2px] font-bold text-[16px] text-[var(--text-primary)] pt-2 pb-2 leading-none">${pct.toFixed(
-                  0
-                )}%</span>
-              </div>
-              <div class="mt-1 h-[6px] w-full rounded-full bg-gray-200 overflow-hidden">
-                <div style="width:${pct}%"
-                     class="h-[6px] bg-[var(--primary-color)]"></div>
-              </div>
-            </button>
-          `;
-            })
-            .join("");
-        }
+    return `
+      <button class="pg-card w-full text-left rounded-2xl bg-white dark:bg-gray-900 pt-2 pb-3 px-3 shadow-sm focus:outline-none active:scale-[0.99] transition"
+              data-keyes="${c.keyES}" data-label="${c.label}" data-icon="${c.icon}">
+        <div class="flex flex-col leading-none">
+          <div class="flex h-7 w-7 items-center justify-center rounded-full ${c.bg} ${c.color}">
+            <span class="material-symbols-outlined text-[15px] leading-none">${c.icon}</span>
+          </div>
+          <span class="mt-[2px] font-semibold text-[var(--text-primary)] text-[14px] pt-2 pb-2 leading-none">${c.label}</span>
+          <span class="mt-[2px] font-bold text-[16px] text-[var(--text-primary)] pt-2 pb-2 leading-none">${pct.toFixed(0)}%</span>
+        </div>
+        <div class="mt-1 h-[6px] w-full rounded-full bg-gray-200 overflow-hidden">
+          <div class="h-[6px] bg-[var(--primary-color)]" style="width:${pct}%"></div>
+        </div>
+      </button>
+    `;
+  }).join("");
+}
 
-        // Listeners para abrir el bottom-sheet con los detalles (Hoy + Promedio global)
-        function attachBreakdownCardEvents(container, entry, averages) {
-          const avgMap = averages?.avgByCategory || {};
-          const avgTotal = Number(averages?.avgTotalPerDay || 0);
-          const dayCount = averages?.dayCount || 0;
 
-          function todayValFor(k, kES) {
-            const byCat = entry
-              ? entry.categories || entry?.totals?.byCategory || {}
-              : {};
-            const fromTotals = Number(byCat[k] ?? byCat[kES] ?? 0);
-            if (fromTotals > 0) return fromTotals;
+/**
+ * Click en tarjeta → abre detalle. Muestra:
+ *  - Contribución al total (HOY, suma con las demás = huella actual)
+ *  - Promedio (n días) combinando ambas fuentes
+ *  - % del total de HOY
+ */
+ function attachBreakdownCardEvents(container, todayMap, todayTotal, averages) {
+  const avgMap = averages?.avgByCategory || {};
+  const dayCount = averages?.dayCount || 0;
 
-            const inputs = Array.isArray(entry?.inputs) ? entry.inputs : [];
-            const target = String(kES || k || "").toLowerCase();
-            const fromInputs = inputs
-              .filter((i) => String(i.category || "").toLowerCase() === target)
-              .reduce((acc, i) => acc + Number(i.co2e || 0), 0);
-            return Number(fromInputs || 0);
-          }
+  container.querySelectorAll(".pg-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const keyES = card.dataset.keyes;
+      const label = card.dataset.label;
+      const icon = card.dataset.icon;
 
-          container.querySelectorAll(".pg-card").forEach((card) => {
-            card.addEventListener("click", () => {
-              const key = card.dataset.key;
-              const keyES = card.dataset.keyes;
-              const label = card.dataset.label;
-              const icon = card.dataset.icon;
+      const today = Number(todayMap?.[keyES] || 0);          // valor de HOY desde totals.byCategory
+      const avg   = Number(avgMap?.[keyES] || 0);            // promedio/día
+      const pct   = todayTotal > 0 ? (today / todayTotal) * 100 : 0; // % del total de HOY
 
-              const vToday = todayValFor(key, keyES);
-              const vAvg = Number(avgMap[keyES] ?? avgMap[key] ?? 0);
-              const pct = avgTotal > 0 ? (vAvg / avgTotal) * 100 : 0;
+      showBreakdownBottomSheet({
+        label,
+        icon,
+        today,
+        avg,
+        pct,
+        dayCount,
+      });
+    });
+  });
+}
 
-              showBreakdownBottomSheet({
-                label,
-                icon,
-                today: vToday,
-                avg: vAvg,
-                pct,
-                dayCount,
-              });
-            });
-          });
-        }
 
-        // Bottom-sheet / modal móvil (igual que antes)
-        function showBreakdownBottomSheet({
-          label,
-          icon,
-          today,
-          avg,
-          pct,
-          dayCount,
-        }) {
-          let overlay = document.getElementById("pgModal");
-          if (!overlay) {
-            overlay = document.createElement("div");
-            overlay.id = "pgModal";
-            overlay.className =
-              "fixed inset-0 z-[100] bg-black/40 flex items-end sm:items-center justify-center";
-            document.body.appendChild(overlay);
-          }
+/**
+ * Modal/bottom-sheet con los valores corregidos.
+ * (Cambié el título de ese bloque a “% del total de hoy” para que no confunda.)
+ */
+function showBreakdownBottomSheet({ label, icon, today, avg, pct, dayCount }) {
+  let overlay = document.getElementById("pgModal");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "pgModal";
+    overlay.className =
+      "fixed inset-0 z-[100] bg-black/40 flex items-end sm:items-center justify-center";
+    document.body.appendChild(overlay);
+  }
 
-          overlay.innerHTML = `
-          <div class="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-lg translate-y-0">
-            <div class="flex items-start gap-3">
-              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[var(--primary-color)]">
-                <span class="material-symbols-outlined">${icon}</span>
-              </div>
-              <div class="flex-1">
-                <p class="text-lg font-semibold text-[var(--text-primary)]">${label}</p>
-                <p class="text-sm text-[var(--text-secondary)]">Detalle de emisiones</p>
-              </div>
-              <button id="pgModalClose" class="ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-                <span class="material-symbols-outlined">close</span>
-              </button>
-            </div>
+  const pctClamped = (() => {
+    const n = Number(pct);
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+  })();
 
-            <div class="mt-4 space-y-3">
-              <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-                <p class="text-xs text-[var(--text-secondary)]">Contribución al total</p>
-                <p class="text-base font-medium text-[var(--text-primary)]">${
-                  today ? today.toFixed(2) + " kg CO₂e" : "Sin datos"
-                }</p>
-              </div>
+  overlay.innerHTML = `
+    <div class="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 p-5 shadow-lg translate-y-0">
+      <div class="flex items-start gap-3">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[var(--primary-color)]">
+          <span class="material-symbols-outlined">${icon}</span>
+        </div>
+        <div class="flex-1">
+          <p class="text-lg font-semibold text-[var(--text-primary)]">${label}</p>
+          <p class="text-sm text-[var(--text-secondary)]">Detalle de emisiones</p>
+        </div>
+        <button id="pgModalClose" class="ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
 
-              <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-                <p class="text-xs text-[var(--text-secondary)]">Promedio(${
-                  dayCount || 0
-                } días)</p>
-                <p class="text-base font-medium text-[var(--text-primary)]">${
-                  avg ? avg.toFixed(2) + " kg CO₂e" : "—"
-                }</p>
-              </div>
+      <div class="mt-4 space-y-3">
+        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+          <p class="text-xs text-[var(--text-secondary)]">Contribución al total</p>
+          <p class="text-base font-medium text-[var(--text-primary)]">
+            ${today ? today.toFixed(2) + " kg CO₂e" : "Sin datos"}
+          </p>
+        </div>
 
-              <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-                <p class="text-xs text-[var(--text-secondary)]">% del promedio total</p>
-                <div class="flex items-end justify-between">
-                  <p class="text-xl font-semibold text-[var(--text-primary)]">${pct.toFixed(
-                    0
-                  )}%</p>
-                  <div class="ml-4 w-2/3 h-2 rounded-full bg-gray-200 overflow-hidden">
-                    <div class="h-2 bg-[var(--primary-color)]" style="width:${Math.max(
-                      0,
-                      Math.min(100, pct)
-                    )}%"></div>
-                  </div>
-                </div>
-              </div>
+        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+          <p class="text-xs text-[var(--text-secondary)]">Promedio(${dayCount || 0} días)</p>
+          <p class="text-base font-medium text-[var(--text-primary)]">
+            ${avg ? avg.toFixed(2) + " kg CO₂e" : "—"}
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+          <p class="text-xs text-[var(--text-secondary)]">% del total de hoy</p>
+          <div class="flex items-end justify-between">
+            <p class="text-xl font-semibold text-[var(--text-primary)]">${pctClamped.toFixed(0)}%</p>
+            <div class="ml-4 w-2/3 h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div class="h-2 bg-[var(--primary-color)]" style="width:${pctClamped}%"></div>
             </div>
           </div>
-        `;
+        </div>
+      </div>
+    </div>
+  `;
 
-          function close() {
-            overlay.remove();
-          }
-          overlay.onclick = (e) => {
-            if (e.target === overlay) close();
-          };
-          overlay
-            .querySelector("#pgModalClose")
-            ?.addEventListener("click", close);
-        }
+  function close() {
+    overlay.remove();
+  }
+  overlay.onclick = (e) => {
+    if (e.target === overlay) close();
+  };
+  overlay.querySelector("#pgModalClose")?.addEventListener("click", close);
+}
+
+/**
+ * Home: ahora usa el total UNIFICADO del último día
+ * y muestra % por categoría del total de HOY.
+ */
+async function pgLoadHomeDashboard() {
+  const user = window.firebaseAuth?.auth?.currentUser;
+  const totalEl = document.getElementById("homeTotal");
+  const dateEl = document.getElementById("homeDate");
+  const deltaChip = document.getElementById("homeDelta");
+  const deltaText = document.getElementById("homeDeltaText");
+  const breakdown = document.getElementById("homeBreakdown");
+  if (!user || !breakdown || !totalEl) return;
+
+  try {
+    const history =
+      await window.firebaseAuth.firestore.getFootprintHistory(user.uid);
+
+    if (!history.length) {
+      totalEl.textContent = "—";
+      if (dateEl) dateEl.textContent = "—";
+      breakdown.innerHTML = buildBreakdownCards(
+        { transporte: 0, energia: 0, alimentacion: 0, residuos: 0 },
+        0
+      );
+      return;
+    }
+
+    // Promedios (con ambas fuentes)
+    const averages = computeGlobalAverages(history);
+
+    const latest = history[0];
+    const prev = history[1] || null;
+
+    const todayMap   = (latest?.totals?.byCategory) || {};
+    const todayTotal = Number(latest?.totals?.co2e ?? latest.total ?? 0) || 0;
+
+
+    // Total y desgloses DEL DÍA (unificados)
+    // const { byCat: todayMap, total: todayTotal } = unifyDayTotals(latest);
+
+    // Fecha segura
+    const date =
+      latest.date ||
+      (latest.timestamp
+        ? new Date(
+            latest.timestamp.seconds
+              ? latest.timestamp.seconds * 1000
+              : latest.timestamp
+          )
+            .toISOString()
+            .substring(0, 10)
+        : "");
+    if (dateEl) dateEl.textContent = date || "—";
+
+    // Huella actual = total de HOY unificado
+    totalEl.textContent = todayTotal.toFixed(1);
+
+
+    // Delta vs anterior (también unificado)
+    if (prev && deltaChip && deltaText) {
+      const prevTotal = unifyDayTotals(prev).total || 0;
+      const diff = prevTotal ? ((todayTotal - prevTotal) / prevTotal) * 100 : 0;
+      deltaText.textContent = `${Math.abs(diff).toFixed(0)}% ${
+        diff <= 0 ? "vs anterior" : "más que anterior"
+      }`;
+      deltaChip.classList.remove("hidden");
+      const icon = deltaChip.querySelector(".material-symbols-outlined");
+      if (icon) icon.textContent = diff <= 0 ? "arrow_downward" : "arrow_upward";
+    }
+
+    // Desglose: % del total de HOY
+    breakdown.innerHTML = buildBreakdownCards(todayMap, todayTotal);
+    attachBreakdownCardEvents(breakdown, todayMap, todayTotal, averages);
+  } catch (e) {
+    console.error("Home dashboard error", e);
+  }
+}
 
         function pgRenderProgressScreen() {
           const ring = document.getElementById("pgRing");
@@ -3449,7 +3444,7 @@ renderPersonalizedMessage(total);
                   .map(function (h) {
                     var d = parseDateSafe(h);
                     var total =
-                      Number(h.total || (h.totals && h.totals.co2e) || 0) || 0;
+                      Number(h.totals.co2e || (h.totals && h.totals.co2e) || 0) || 0;
                     return { raw: h, date: d, total: total };
                   })
                   .filter(function (it) {
@@ -4569,10 +4564,10 @@ renderPersonalizedMessage(total);
             wrap.innerHTML = `
       <div class="flex flex-col items-center justify-center text-center">
         <span class="material-symbols-outlined text-grey-500 text-3xl mb-1">warning</span>
-        <span class="text-red-500 font-bold text-sm leading-tight">
+        <span class="text-red-400 font-bold text-sm leading-tight">
           ¡Te has pasado!
         </span>
-        <span class="text-red-400 text-xs mt-0.5">
+        <span class="text-red-400 font-bold text-xs mt-0.5">
           ${daily}/${goal}
         </span>
       </div>
