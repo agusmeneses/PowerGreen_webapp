@@ -963,9 +963,12 @@
                 <span id="totalCarbonFootprint">0</span> toneladas CO₂e
               </p>
               <p class="text-sm mt-2 text-gray-600 dark:text-gray-400">
-                El promedio es <span id="averageComparison">10</span> toneladas
+                El promedio es <span id="averageComparison">5</span> toneladas
                 CO₂e por persona
               </p>
+
+              <!-- Mensaje personalizado por nivel de huella -->
+              <div id="personalizedMessage" class="mt-4 hidden"></div>
             </div>
 
             <div class="mb-6">
@@ -2198,6 +2201,52 @@
         );
 
         // --- Chart + Calculate ---
+        // Clasifica la huella anual en toneladas CO₂e y devuelve label + texto
+        function classifyFootprint(totalTonsRaw) {
+          // Aseguramos que no sea negativo por restas (renovables, etc.)
+          const t = Math.max(0, Number(totalTonsRaw) || 0);
+
+          if (t <= 3) {
+            return {
+              tier: "baja",
+              label: "Baja",
+              text: "¡Vas bien! Tu impacto es bajo, y podrías reducirlo aún más. Cada acción cuenta, y vos ya estás marcando la diferencia.",
+            };
+          }
+          if (t <= 5) {
+            return {
+              tier: "media",
+              label: "Media",
+              text: "Vas por un buen camino. Con un poco más de conciencia, podés convertirte en parte del cambio que necesitamos.",
+            };
+          }
+          return {
+            tier: "alta",
+            label: "Alta",
+            text: "Tu huella es más alta que el promedio, pero nunca es tarde para mejorar. El cambio empieza con una decisión, y está en tus manos.",
+          };
+        }
+
+        // Pinta el mensaje en el contenedor según el tier
+        function renderPersonalizedMessage(totalTons) {
+          const host = document.getElementById("personalizedMessage");
+          if (!host) return;
+
+          const { tier, label, text } = classifyFootprint(totalTons);
+
+          // Estilos por tier (claros y accesibles en light/dark)
+          const classesByTier = {
+            baja: "mt-4 rounded-lg px-4 py-3 text-sm bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-200 border border-green-200/60 dark:border-green-800/60",
+            media:
+              "mt-4 rounded-lg px-4 py-3 text-sm bg-yellow-100 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200 border border-yellow-200/60 dark:border-yellow-800/60",
+            alta: "mt-4 rounded-lg px-4 py-3 text-sm bg-red-100 text-red-900 dark:bg-red-900/30 dark:text-red-200 border border-red-200/60 dark:border-red-800/60",
+          };
+
+          host.className =
+            classesByTier[tier] || "mt-4 px-4 py-3 text-sm rounded-lg";
+          host.innerHTML = `<strong>${label}:</strong> ${text}`;
+          host.classList.remove("hidden");
+        }
         let footprintChart = null;
         function createFootprintChart(data) {
           const canvas = document.getElementById("footprintChart");
@@ -2549,7 +2598,7 @@
 
             <div class="mt-4 space-y-3">
               <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-                <p class="text-xs text-[var(--text-secondary)]">Huella original</p>
+                <p class="text-xs text-[var(--text-secondary)]">Contribución al total</p>
                 <p class="text-base font-medium text-[var(--text-primary)]">${
                   today ? today.toFixed(2) + " kg CO₂e" : "Sin datos"
                 }</p>
@@ -2693,6 +2742,9 @@
           const totalEl = document.getElementById("totalCarbonFootprint");
           if (totalEl) totalEl.textContent = total;
           if (resultsSection) resultsSection.classList.remove("hidden");
+          // Mostrar mensaje personalizado según total (t CO₂e/año)
+renderPersonalizedMessage(total);
+
 
           createFootprintChart([
             transportTotal,
@@ -3644,10 +3696,33 @@
             window.firebaseAuth.auth &&
             window.firebaseAuth.auth.currentUser;
 
+          // Límites máximos por categoría (generosos pero no exorbitantes)
+          var MAX = {
+            transporte: 500, // km/día
+            energia: 20, // kWh/día
+            alimentacion: 8, // comidas/día
+            ropa: 20, // prendas/día
+            electronica: 24, // h uso/día
+            residuos: 20, // kg/día
+          };
+
           (window.CATEGORIES || []).forEach(function (cat) {
             var card = document.createElement("div");
             card.className =
               "pg-card bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm";
+            // Añadimos un pequeño elemento para mostrar aviso local si supera el máximo
+            var maxVal = MAX[cat.id] || "";
+
+            // Info pequeño solo para Energía (igual estilo que el tooltip en la calculadora)
+            var infoHtml = "";
+            if (cat.id === "energia") {
+              infoHtml =
+                '<span class="info-tooltip ml-2" data-info="Estimado de valores: Bajo ≤ 7 kWh/día · Medio 8–12 kWh/día · Alto ≥ 13 kWh/día">' +
+                '<svg class="w-4 h-4 inline text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">' +
+                '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd"/></svg>' +
+                "</span>";
+            }
+
             card.innerHTML = [
               '<div class="flex h-full flex-col justify-between">',
               "<div>",
@@ -3662,15 +3737,19 @@
               cat.label || "",
               "</h3>",
               '<p class="text-sm text-gray-500">',
-              cat.hint || "",
+              (cat.hint || "") + infoHtml,
               "</p>",
               "</div>",
               "</div>",
               '<div class="relative mt-6">',
-              '<input type="number" min="0" step="0.01" class="no-spinner w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 p-4 text-center text-2xl font-bold focus:border-primary focus:ring-primary" placeholder="0" />',
+              '<input type="number" min="0" step="0.01" class="no-spinner w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 p-4 text-center text-2xl font-bold focus:border-primary focus:ring-primary" placeholder="0" data-max="' +
+                maxVal +
+                '" />',
               '<span class="absolute right-4 top-1/2 -translate-y-1/2 text-lg text-gray-500">',
               cat.unit || "",
               "</span>",
+              // aviso inline (hidden por defecto)
+              '<div class="pg-input-warning mt-3 hidden text-sm"></div>',
               "</div>",
               "</div>",
               '<button class="mt-6 w-full rounded-xl bg-primary hover:bg-secondary text-white py-3 font-semibold transition-colors">Añadir</button>',
@@ -3680,9 +3759,60 @@
             // Wire up add button
             var btn = card.querySelector("button");
             var input = card.querySelector("input");
+            var warn = card.querySelector(".pg-input-warning");
+
+            function showWarning(msg) {
+              if (!warn) return;
+              warn.classList.remove("hidden");
+              warn.innerHTML =
+                '<div class="rounded-md p-2 ' +
+                (msg ? "bg-red-50 text-red-700 dark:bg-red-900/40" : "") +
+                '"><strong>' +
+                (msg || "") +
+                "</strong></div>";
+            }
+            function hideWarning() {
+              if (!warn) return;
+              warn.classList.add("hidden");
+              warn.innerHTML = "";
+            }
+
+            // Validación en tiempo real (avisar si excede máximo)
+            input.addEventListener("input", function () {
+              hideWarning();
+              var v = Number(this.value);
+              var m = Number(this.dataset.max || 0);
+              if (!isNaN(v) && m > 0 && v > m) {
+                showWarning(
+                  "Valor muy alto para " +
+                    (cat.label || cat.id) +
+                    ". Límite razonable: " +
+                    m +
+                    " " +
+                    (cat.unit || "")
+                );
+              }
+            });
+
             btn.addEventListener("click", function () {
               var val = Number(input.value);
+              var m = Number(input.dataset.max || 0);
               if (isNaN(val) || val < 0) {
+                input.focus();
+                showWarning("Ingresa un número válido.");
+                return;
+              }
+              if (m > 0 && val > m) {
+                // Mensaje siguiendo estética (claro y directo)
+                showWarning(
+                  "Has superado el límite razonable de " +
+                    m +
+                    " " +
+                    (cat.unit || "") +
+                    " para " +
+                    (cat.label || cat.id) +
+                    ". Si necesitas registrar más, contacta soporte."
+                );
                 input.focus();
                 return;
               }
@@ -3697,22 +3827,30 @@
               btn.disabled = true;
               var original = btn.textContent;
               btn.textContent = "Guardando…";
+              hideWarning();
               window
                 .saveDaily(user.uid, cat.id, val)
                 .then(function () {
-                  showToast(
-                    "+" +
+                  // Toast pequeño consistente con la UI
+                  var t = document.getElementById("dailyToast");
+                  if (t) {
+                    t.textContent =
+                      "+" +
                       val +
                       " " +
                       (cat.unit || "") +
                       " en " +
-                      (cat.label || "")
-                  );
+                      (cat.label || "");
+                    t.classList.remove("hidden");
+                    setTimeout(function () {
+                      t.classList.add("hidden");
+                    }, 1400);
+                  }
                   input.value = "";
                 })
                 .catch(function (e) {
                   console.error(e);
-                  alert("No se pudo guardar");
+                  showWarning("No se pudo guardar. Intenta de nuevo.");
                 })
                 .finally(function () {
                   btn.disabled = false;
@@ -3751,6 +3889,123 @@
       })();
     </script>
     <!-- === /PG Daily override === -->
+    <!-- Fix: tooltips appended to body to avoid being cortadas por overflow -->
+    <style>
+      /* Disable the old CSS pseudo-tooltip so it no longer shows/gets clipped */
+      .info-tooltip::after {
+        display: none !important;
+      }
+
+      /* Styling for the body-appended tooltip */
+      .pg-body-tooltip {
+        position: fixed;
+        z-index: 99999;
+        background: #2c3e50;
+        color: #fff;
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        line-height: 1.3;
+        max-width: 300px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+        pointer-events: none;
+        transition: opacity 120ms ease;
+        opacity: 1;
+      }
+    </style>
+
+    <script>
+      (function () {
+        function createBodyTooltip(el) {
+          var txt = el.getAttribute("data-info") || "";
+          var t = document.createElement("div");
+          t.className = "pg-body-tooltip";
+          t.textContent = txt;
+          document.body.appendChild(t);
+          return t;
+        }
+        function positionTooltip(t, el) {
+          if (!t || !el) return;
+          var r = el.getBoundingClientRect();
+          // center horizontally above element, but keep inside viewport
+          var tw = t.offsetWidth || 200;
+          var left = Math.max(
+            8,
+            Math.min(window.innerWidth - tw - 8, r.left + r.width / 2 - tw / 2)
+          );
+          // try above; if not enough space, show below
+          var topAbove = r.top - (t.offsetHeight || 36) - 8;
+          if (topAbove < 8) {
+            // place below
+            t.style.top = r.bottom + 8 + "px";
+          } else {
+            t.style.top = topAbove + "px";
+          }
+          t.style.left = left + "px";
+        }
+
+        function wire(el) {
+          var tip = null;
+          var hoverTimer = null;
+          el.addEventListener("mouseenter", function () {
+            // small delay to avoid flicker
+            hoverTimer = setTimeout(function () {
+              tip = createBodyTooltip(el);
+              // position after appended
+              setTimeout(function () {
+                positionTooltip(tip, el);
+              }, 8);
+            }, 60);
+          });
+          el.addEventListener("mousemove", function () {
+            if (tip) positionTooltip(tip, el);
+          });
+          el.addEventListener("mouseleave", function () {
+            if (hoverTimer) {
+              clearTimeout(hoverTimer);
+              hoverTimer = null;
+            }
+            if (tip) {
+              tip.remove();
+              tip = null;
+            }
+          });
+          el.addEventListener("click", function () {
+            if (hoverTimer) {
+              clearTimeout(hoverTimer);
+              hoverTimer = null;
+            }
+            if (tip) {
+              tip.remove();
+              tip = null;
+            }
+          });
+        }
+
+        function init() {
+          // wire existing ones now
+          document.querySelectorAll(".info-tooltip").forEach(wire);
+          // observe future additions (cards re-render)
+          if (window.MutationObserver) {
+            var mo = new MutationObserver(function () {
+              document
+                .querySelectorAll(".info-tooltip:not([data-pg-wired])")
+                .forEach(function (el) {
+                  el.setAttribute("data-pg-wired", "1");
+                  wire(el);
+                });
+            });
+            mo.observe(document.body, { childList: true, subtree: true });
+          }
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      })();
+    </script>
 
     <style>
       :root {
