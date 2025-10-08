@@ -1732,11 +1732,11 @@
                   </div>
                 </div>
                 <!-- Hidden canvas to preserve existing logic if needed -->
-                <div class="mt-4 h-40">
+                <div class="mt-4 h-50">
                   <canvas id="progressChart"></canvas>
                   <p
                     id="noProgressData"
-                    class="text-center py-4 text-gray-500 dark:text-gray-400"
+                    class="text-center py-0 text-gray-500 dark:text-gray-400"
                   >
                     Registra tu huella en el tiempo calculándola regularmente.
                   </p>
@@ -2593,7 +2593,21 @@ async function pgLoadHomeDashboard() {
     const prev = history[1] || null;
 
     const todayMap   = (latest?.totals?.byCategory) || {};
-    const todayTotal = Number(latest?.totals?.co2e ?? latest.total ?? 0) || 0;
+
+    // const todayTotal = Number(latest?.totals?.co2e ?? latest.total ?? 0) || 0;
+    // Obtener total diario si existe, o convertir el total anual de la calculadora a kg/día
+    let todayTotal = Number(latest?.totals?.co2e ?? 0);
+
+    // Si no hay datos diarios, usar el total anual (ton CO₂e/año) convertido a kg/día
+    if (!todayTotal || todayTotal <= 0) {
+      const annualTon =
+        Number(latest?.total) ||
+        Number(latest?.totals?.annualCo2e) ||
+        Number(latest?.categories?.total) ||
+        0;
+
+      todayTotal = annualTon > 0 ? (annualTon * 1000) / 365 : 0;
+    }
 
 
     // Total y desgloses DEL DÍA (unificados)
