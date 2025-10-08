@@ -2915,7 +2915,7 @@ renderPersonalizedMessage(total);
           id: "transporte",
           label: "Transporte",
           unit: "km",
-          factor: 0.121,
+          factor: 0.171, //0.171 kg CO2e/km (auto nafta promedio, incluye CH4 + N2O)
           icon: "🚗",
           hint: "Auto, moto o similar",
         },
@@ -2923,7 +2923,7 @@ renderPersonalizedMessage(total);
           id: "energia",
           label: "Energía",
           unit: "kWh",
-          factor: 0.233,
+          factor: 0.36, // Argentina ~0.36 kg/kWh (según CAMMESA 2022)
           icon: "⚡",
           hint: "Consumo eléctrico",
         },
@@ -2931,31 +2931,31 @@ renderPersonalizedMessage(total);
           id: "alimentacion",
           label: "Alimentación",
           unit: "comidas",
-          factor: 2.5,
+          factor: 1.5, //Comida promedio mixta (IPCC + Poore & Nemecek, Science 2018)
           icon: "🍽️",
           hint: "Estimación por comida",
         },
-        {
-          id: "ropa",
-          label: "Ropa",
-          unit: "prendas",
-          factor: 6.5,
-          icon: "👕",
-          hint: "Compra/uso eventual",
-        },
-        {
-          id: "electronica",
-          label: "Electrónica",
-          unit: "h uso",
-          factor: 0.05,
-          icon: "📱",
-          hint: "Uso dispositivos",
-        },
+        // {
+        //   id: "ropa",
+        //   label: "Ropa",
+        //   unit: "prendas",
+        //   factor: 6.5, //Textile Exchange 2021 / IPCC 2019 refinado
+        //   icon: "👕",
+        //   hint: "Compra/uso eventual",
+        // },
+        // {
+        //   id: "electronica",
+        //   label: "Electrónica",
+        //   unit: "h uso",
+        //   factor: 0.07, //IEA 2022 / IPCC Energy Sector 1A1a
+        //   icon: "📱",
+        //   hint: "Uso dispositivos",
+        // },
         {
           id: "residuos",
           label: "Residuos",
           unit: "kg",
-          factor: 0.45,
+          factor: 0.45, //IPCC Waste Sector 5 / 2006 Guidelines
           icon: "🗑️",
           hint: "Desechos generados",
         },
@@ -3076,8 +3076,8 @@ renderPersonalizedMessage(total);
             transporte: 0,
             energia: 0,
             alimentacion: 0,
-            ropa: 0,
-            electronica: 0,
+            // ropa: 0,
+            // electronica: 0,
             residuos: 0,
           },
           current?.totals?.byCategory || {}
@@ -3333,8 +3333,8 @@ renderPersonalizedMessage(total);
                   transporte: 0,
                   energia: 0,
                   alimentacion: 0,
-                  ropa: 0,
-                  electronica: 0,
+                  // ropa: 0,
+                  // electronica: 0,
                   residuos: 0,
                 },
                 (current && current.totals && current.totals.byCategory) || {}
@@ -3630,8 +3630,8 @@ renderPersonalizedMessage(total);
           transporte: "directions_car",
           energia: "bolt",
           alimentacion: "restaurant",
-          ropa: "checkroom",
-          electronica: "devices",
+          // ropa: "checkroom",
+          // electronica: "devices",
           residuos: "delete",
         };
 
@@ -3667,22 +3667,22 @@ renderPersonalizedMessage(total);
               mi: ICONS["alimentacion"],
               hint: "Estimación por comida",
             },
-            {
-              id: "ropa",
-              label: "Ropa",
-              unit: "prendas",
-              factor: 6.5,
-              mi: ICONS["ropa"],
-              hint: "Compra/uso eventual",
-            },
-            {
-              id: "electronica",
-              label: "Electrónica",
-              unit: "h uso",
-              factor: 0.05,
-              mi: ICONS["electronica"],
-              hint: "Uso dispositivos",
-            },
+            // {
+            //   id: "ropa",
+            //   label: "Ropa",
+            //   unit: "prendas",
+            //   factor: 6.5,
+            //   mi: ICONS["ropa"],
+            //   hint: "Compra/uso eventual",
+            // },
+            // {
+            //   id: "electronica",
+            //   label: "Electrónica",
+            //   unit: "h uso",
+            //   factor: 0.05,
+            //   mi: ICONS["electronica"],
+            //   hint: "Uso dispositivos",
+            // },
             {
               id: "residuos",
               label: "Residuos",
@@ -3710,8 +3710,8 @@ renderPersonalizedMessage(total);
             transporte: 500, // km/día
             energia: 20, // kWh/día
             alimentacion: 8, // comidas/día
-            ropa: 20, // prendas/día
-            electronica: 24, // h uso/día
+            // ropa: 20, // prendas/día
+            // electronica: 24, // h uso/día
             residuos: 20, // kg/día
           };
 
